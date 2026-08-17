@@ -214,7 +214,7 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 .card[open] > summary { margin-block-end: .7rem; }
 
 /* ─────────────── identity card ─────────────── */
-.id-card { display: grid; grid-template-columns: 1fr auto; gap: .9rem; align-items: center; }
+.id-card { display: grid; grid-template-columns: 1fr auto; gap: .7rem; align-items: center; }
 .id-main { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
 .id-badges { display: flex; gap: .35rem; flex-wrap: wrap; }
 .pill {
@@ -225,18 +225,18 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 .pill-path { color: var(--cool); }
 .id-card.rick .pill-path { color: var(--hot); }
 .pill-nat { color: var(--muted); }
-.id-name { font-size: 1.5rem; font-weight: 900; }
-.id-meta { display: flex; gap: .6rem; font-size: .82rem; color: var(--muted); flex-wrap: wrap; }
+.id-name { font-size: 1.3rem; font-weight: 900; }
+.id-meta { display: flex; gap: .55rem; font-size: .78rem; color: var(--muted); flex-wrap: wrap; }
 .id-meta b { color: var(--text); }
 .score-badge {
-  min-width: 86px; flex: none; text-align: center;
-  border-radius: 12px; padding: .5rem .55rem;
+  min-width: 74px; flex: none; text-align: center; align-self: start;
+  border-radius: 12px; padding: .4rem .5rem;
   background: var(--score); color: #211603;
 }
 .score-badge span { display: block; font-family: var(--mono); font-size: .55rem; letter-spacing: .14em; opacity: .75; }
 .score-badge b {
   display: block; font-family: var(--mono); font-weight: 700; line-height: 1.1;
-  font-size: 1.75rem; direction: ltr; unicode-bidi: isolate;
+  font-size: 1.45rem; direction: ltr; unicode-bidi: isolate;
 }
 .score-badge b.long { font-size: 1.3rem; }
 
@@ -472,3 +472,36 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
 }
+
+/* ─────────────── pixel portrait ─────────────── */
+.avatar-wrap {
+  flex: none; width: 72px; display: grid; place-items: end center;
+  border-radius: 10px; padding: .35rem;
+  background: radial-gradient(circle at 50% 85%, rgb(76 196 240 / .1), transparent 70%);
+}
+.id-card.rick .avatar-wrap { background: radial-gradient(circle at 50% 85%, rgb(255 95 162 / .12), transparent 70%); }
+.avatar-wrap.big { width: 108px; }
+.avatar-wrap.center-self { justify-self: center; }
+.avatar {
+  display: block; width: 100%; height: auto;
+  image-rendering: pixelated; image-rendering: crisp-edges;
+}
+.avatar.pop { animation: avatar-pop .45s cubic-bezier(.3,1.4,.5,1); }
+@keyframes avatar-pop { 0% { transform: scale(1); } 45% { transform: scale(1.14) translateY(-2px); } }
+
+.id-card { grid-template-columns: auto 1fr auto; }
+.marks {
+  grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .3rem;
+  padding-block-start: .6rem; border-block-start: 1px solid var(--line-soft);
+}
+.marks:empty { display: none; }
+.mark {
+  font-size: .68rem; padding: .1rem .45rem; border-radius: 99px;
+  background: var(--card-2); color: var(--muted); border: 1px solid var(--line-soft);
+}
+.mark.fresh { color: var(--score); border-color: rgb(245 177 61 / .45); }
+
+.preview-card { display: flex; align-items: center; gap: .9rem; }
+.preview-card > div:last-child { flex: 1; min-width: 0; }
+.grave { display: grid; gap: .15rem; justify-items: center; text-align: center; }
+.grave-av { width: 46px; background: none; padding: 0 0 .3rem; }

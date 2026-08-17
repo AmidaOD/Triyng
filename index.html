@@ -43,7 +43,10 @@
     <div class="col">
       <h2 class="step-title">מי אתה הולך להיות?</h2>
 
-      <div class="card nft-card" id="nft-preview"></div>
+      <div class="card preview-card">
+        <div class="avatar-wrap big"><canvas class="avatar" id="avatar-preview" aria-label="דיוקן הדמות"></canvas></div>
+        <div id="nft-preview"></div>
+      </div>
 
       <div class="field">
         <span class="field-label">מסלול חיים</span>
@@ -109,7 +112,12 @@
   <section class="screen screen-run" id="screen-run">
     <div class="col col-run">
 
-      <div class="card id-card" id="id-card"></div>
+      <div class="card id-card" id="id-card">
+        <div class="avatar-wrap"><canvas class="avatar" id="avatar" aria-label="דיוקן הדמות"></canvas></div>
+        <div class="id-main" id="id-main"></div>
+        <div class="score-badge" id="score-badge"></div>
+        <div class="marks" id="marks"></div>
+      </div>
 
       <div class="card gauges" id="gauges"></div>
 
@@ -146,6 +154,7 @@
   <section class="screen screen-end" id="screen-end">
     <div class="col">
       <div class="card end-card">
+        <div class="avatar-wrap big center-self"><canvas class="avatar" id="avatar-end" aria-label="דיוקן הדמות בסיום"></canvas></div>
         <p class="eyebrow" id="end-kicker"></p>
         <h2 class="end-title" id="end-title"></h2>
         <p class="end-text" id="end-text"></p>

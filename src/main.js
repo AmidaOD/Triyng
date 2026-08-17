@@ -13,6 +13,7 @@ import { scoreRun, grade } from './scoring.js';
 import { evaluate, progress } from './collection.js';
 import { makeRng, randomSeed } from './rng.js';
 import * as ui from './ui.js';
+import { paint as paintAvatar, marksOf } from './avatar.js';
 
 const { $, $$ } = ui;
 
@@ -41,7 +42,8 @@ function init() {
     'btn-wallet', 'btn-top-back', 'btn-boot', 'btn-goto-legacy', 'btn-goto-about', 'btn-goto-collection',
     'boot-coll', 'inp-seed', 'btn-reseed', 'btn-mint', 'nft-preview', 'mint-note', 'mint-fee',
     'chk-timer', 'pace-note', 'mode-note',
-    'id-card', 'gauges', 'history', 'inv-card', 'inv-list', 'txs', 'chain-count',
+    'id-card', 'id-main', 'score-badge', 'marks', 'avatar', 'avatar-preview', 'avatar-end',
+    'gauges', 'history', 'inv-card', 'inv-list', 'txs', 'chain-count',
     'timer-wrap', 'timer-bar', 'sheet', 'sheet-body',
     'end-kicker', 'end-title', 'end-text', 'end-total', 'score-board', 'end-history', 'unlocks',
     'btn-again', 'btn-end-legacy', 'btn-end-collection', 'btn-copy',
@@ -139,6 +141,7 @@ function updateNotes() {
 function updatePreview() {
   const preview = createRun({ ...readConfig(), legacy: chain.legacy });
   ui.renderPreview(el['nft-preview'], preview);
+  paintAvatar(el['avatar-preview'], preview);
   el['mint-note'].textContent = chain.legacy
     ? `${chain.legacy.id} הוריש +1 ל${TRAIT_HE[chain.legacy.passdown]}.`
     : '';
@@ -161,6 +164,7 @@ function startRun() {
 
   currentEvent = null;
   pendingDigest = [];
+  shownMarks = new Set();
   el['timer-wrap'].classList.toggle('off', !run.useTimer);
   go('screen-run');
   paintRun();
@@ -169,8 +173,23 @@ function startRun() {
 
 /* ───────────────────────── chapter loop ───────────────────────── */
 
+let shownMarks = new Set();
+
 function paintRun() {
-  ui.renderId(el['id-card'], run, scoreRun(run).total);
+  ui.renderId({ card: el['id-card'], main: el['id-main'], score: el['score-badge'] }, run, scoreRun(run).total);
+
+  // A new mark means a past choice just became visible — say so, and pulse.
+  const marks = marksOf(run);
+  const fresh = new Set(marks.filter((m) => !shownMarks.has(m)));
+  ui.renderMarks(el.marks, run, fresh);
+  paintAvatar(el.avatar, run);
+  if (fresh.size && shownMarks.size) {
+    el.avatar.classList.remove('pop');
+    void el.avatar.offsetWidth;
+    el.avatar.classList.add('pop');
+  }
+  shownMarks = new Set(marks);
+
   ui.renderGauges(el.gauges, run);
   ui.renderHistory(el.history, run);
   ui.renderInventory(el['inv-card'], el['inv-list'], run);
@@ -345,6 +364,7 @@ function finishRun() {
       payout ? ` · תגמול עונה <span class="num">${payout} $TICKET</span>` : ''}</small>`;
   el['end-total'].textContent = score.total.toLocaleString('en-US');
 
+  paintAvatar(el['avatar-end'], run);
   ui.renderScore(el['score-board'], score);
   ui.renderHistory(el['end-history'], run, { full: true });
   ui.renderUnlocks(el.unlocks, fresh);

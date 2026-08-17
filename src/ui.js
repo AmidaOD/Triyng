@@ -7,6 +7,7 @@ import { TRAITS, ITEMS } from './state.js';
 import { shortHex } from './rng.js';
 import { ACHIEVEMENTS, RARITY, unlocked, progress } from './collection.js';
 import { chain } from './chain.js';
+import { marksOf, stageName, paint as paintAvatar } from './avatar.js';
 
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -28,25 +29,28 @@ export function showScreen(id) {
 
 const PATH_NAME = { morty: 'SAFE YIELD', rick: 'DEGEN' };
 
-export function renderId(el, run, score) {
-  el.className = `card id-card ${run.path}`;
-  el.innerHTML = `
-    <div class="id-main">
-      <div class="id-badges">
-        <span class="pill pill-path">${PATH_NAME[run.path]}</span>
-        <span class="pill pill-nat">ROY #${run.tokenId}</span>
-      </div>
-      <div class="id-name">${run.path === 'rick' ? 'רוי // מחוץ לרשת' : 'רוי'}</div>
-      <div class="id-meta">
-        <span>גיל <b>${run.age}</b></span>
-        <span>פרק <b>${run.chapter + 1}</b></span>
-        <span>מכפיל <b class="num">×${run.multiplier.toFixed(2)}</b></span>
-      </div>
+export function renderId(els, run, score) {
+  els.card.className = `card id-card ${run.path}`;
+  els.main.innerHTML = `
+    <div class="id-badges">
+      <span class="pill pill-path">${PATH_NAME[run.path]}</span>
+      <span class="pill pill-nat">${esc(stageName(run.age))}</span>
     </div>
-    <div class="score-badge">
-      <span>SCORE</span>
-      <b class="${score >= 10000 ? 'long' : ''}">${score.toLocaleString('en-US')}</b>
+    <div class="id-name">${run.path === 'rick' ? 'רוי // מחוץ לרשת' : 'רוי'}</div>
+    <div class="id-meta">
+      <span>גיל <b>${run.age}</b></span>
+      <span>פרק <b>${run.chapter + 1}</b></span>
+      <span>מכפיל <b class="num">×${run.multiplier.toFixed(2)}</b></span>
     </div>`;
+  els.score.innerHTML = `
+    <span>SCORE</span>
+    <b class="${score >= 10000 ? 'long' : ''}">${score.toLocaleString('en-US')}</b>`;
+}
+
+/** The chips under the portrait name every mark a past choice left on him. */
+export function renderMarks(el, run, freshSet) {
+  el.innerHTML = marksOf(run)
+    .map((m) => `<span class="mark${freshSet?.has(m) ? ' fresh' : ''}">${esc(m)}</span>`).join('');
 }
 
 /** Traits only matter at mint time, so the preview card carries them. */
@@ -58,7 +62,6 @@ export function renderPreview(el, run) {
       <b>${v}</b>
     </div>`).join('');
 
-  el.className = `card id-card-preview ${run.path}`;
   el.innerHTML = `
     <div class="id-badges" style="margin-block-end:.5rem">
       <span class="pill pill-path">${PATH_NAME[run.path]}</span>
@@ -255,15 +258,32 @@ export function renderBoard(el) {
 }
 
 export function renderGraves(el) {
-  const g = chain.state.graves;
-  if (!g.length) { el.innerHTML = '<p class="empty-note">בית הקברות ריק.</p>'; return; }
-  el.innerHTML = g.slice(0, 12).map((x) => `
+  const graves = chain.state.graves;
+  if (!graves.length) { el.innerHTML = '<p class="empty-note">בית הקברות ריק.</p>'; return; }
+
+  const shown = graves.slice(0, 12);
+  el.innerHTML = shown.map((x) => `
     <div class="grave">
+      <div class="avatar-wrap grave-av"><canvas class="avatar"></canvas></div>
       <b>ROY #${x.tokenId}</b>
       <span>גיל ${x.age} · ${esc(x.endTitle)}</span>
-      <span>${num(x.score.toLocaleString('en-US'))} נק׳</span>
+      <span class="grave-score">${num(x.score.toLocaleString('en-US'))} נק׳</span>
       <span class="sbt">SOULBOUND · ${TRAITS[x.passdown]?.he ?? x.passdown} +1</span>
     </div>`).join('');
+
+  // Repaint each headstone portrait from the state the soulbound token kept.
+  $$('.grave canvas', el).forEach((canvas, i) => paintAvatar(canvas, graveRun(shown[i])));
+}
+
+/** The minimum a portrait needs, rebuilt from a soulbound record. */
+function graveRun(g) {
+  return {
+    age: g.age,
+    path: g.path,
+    alive: false,
+    flags: new Set(g.flags ?? []),
+    res: g.res ?? { health: 0, sanity: 0, career: 0 },
+  };
 }
 
 export function renderCollection(grid, prog) {

@@ -135,6 +135,9 @@ class MockChainAdapter {
       score: score.total,
       multiplier: run.multiplier,
       milestones: run.milestones.map((m) => m.name),
+      // Enough state to repaint the portrait on the graveyard later.
+      flags: [...run.flags],
+      res: { ...run.res },
       passdown: this.#bestTrait(run),
       at: Date.now(),
     };

@@ -226,7 +226,7 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 .card[open] > summary { margin-block-end: .7rem; }
 
 /* ─────────────── identity card ─────────────── */
-.id-card { display: grid; grid-template-columns: 1fr auto; gap: .9rem; align-items: center; }
+.id-card { display: grid; grid-template-columns: 1fr auto; gap: .7rem; align-items: center; }
 .id-main { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
 .id-badges { display: flex; gap: .35rem; flex-wrap: wrap; }
 .pill {
@@ -237,18 +237,18 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 .pill-path { color: var(--cool); }
 .id-card.rick .pill-path { color: var(--hot); }
 .pill-nat { color: var(--muted); }
-.id-name { font-size: 1.5rem; font-weight: 900; }
-.id-meta { display: flex; gap: .6rem; font-size: .82rem; color: var(--muted); flex-wrap: wrap; }
+.id-name { font-size: 1.3rem; font-weight: 900; }
+.id-meta { display: flex; gap: .55rem; font-size: .78rem; color: var(--muted); flex-wrap: wrap; }
 .id-meta b { color: var(--text); }
 .score-badge {
-  min-width: 86px; flex: none; text-align: center;
-  border-radius: 12px; padding: .5rem .55rem;
+  min-width: 74px; flex: none; text-align: center; align-self: start;
+  border-radius: 12px; padding: .4rem .5rem;
   background: var(--score); color: #211603;
 }
 .score-badge span { display: block; font-family: var(--mono); font-size: .55rem; letter-spacing: .14em; opacity: .75; }
 .score-badge b {
   display: block; font-family: var(--mono); font-weight: 700; line-height: 1.1;
-  font-size: 1.75rem; direction: ltr; unicode-bidi: isolate;
+  font-size: 1.45rem; direction: ltr; unicode-bidi: isolate;
 }
 .score-badge b.long { font-size: 1.3rem; }
 
@@ -484,6 +484,39 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
 }
+
+/* ─────────────── pixel portrait ─────────────── */
+.avatar-wrap {
+  flex: none; width: 72px; display: grid; place-items: end center;
+  border-radius: 10px; padding: .35rem;
+  background: radial-gradient(circle at 50% 85%, rgb(76 196 240 / .1), transparent 70%);
+}
+.id-card.rick .avatar-wrap { background: radial-gradient(circle at 50% 85%, rgb(255 95 162 / .12), transparent 70%); }
+.avatar-wrap.big { width: 108px; }
+.avatar-wrap.center-self { justify-self: center; }
+.avatar {
+  display: block; width: 100%; height: auto;
+  image-rendering: pixelated; image-rendering: crisp-edges;
+}
+.avatar.pop { animation: avatar-pop .45s cubic-bezier(.3,1.4,.5,1); }
+@keyframes avatar-pop { 0% { transform: scale(1); } 45% { transform: scale(1.14) translateY(-2px); } }
+
+.id-card { grid-template-columns: auto 1fr auto; }
+.marks {
+  grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .3rem;
+  padding-block-start: .6rem; border-block-start: 1px solid var(--line-soft);
+}
+.marks:empty { display: none; }
+.mark {
+  font-size: .68rem; padding: .1rem .45rem; border-radius: 99px;
+  background: var(--card-2); color: var(--muted); border: 1px solid var(--line-soft);
+}
+.mark.fresh { color: var(--score); border-color: rgb(245 177 61 / .45); }
+
+.preview-card { display: flex; align-items: center; gap: .9rem; }
+.preview-card > div:last-child { flex: 1; min-width: 0; }
+.grave { display: grid; gap: .15rem; justify-items: center; text-align: center; }
+.grave-av { width: 46px; background: none; padding: 0 0 .3rem; }
 </style>
 <header class="topbar">
   <button class="top-back" id="btn-top-back" hidden aria-label="חזרה">‹</button>
@@ -514,7 +547,10 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
     <div class="col">
       <h2 class="step-title">מי אתה הולך להיות?</h2>
 
-      <div class="card nft-card" id="nft-preview"></div>
+      <div class="card preview-card">
+        <div class="avatar-wrap big"><canvas class="avatar" id="avatar-preview" aria-label="דיוקן הדמות"></canvas></div>
+        <div id="nft-preview"></div>
+      </div>
 
       <div class="field">
         <span class="field-label">מסלול חיים</span>
@@ -580,7 +616,12 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
   <section class="screen screen-run" id="screen-run">
     <div class="col col-run">
 
-      <div class="card id-card" id="id-card"></div>
+      <div class="card id-card" id="id-card">
+        <div class="avatar-wrap"><canvas class="avatar" id="avatar" aria-label="דיוקן הדמות"></canvas></div>
+        <div class="id-main" id="id-main"></div>
+        <div class="score-badge" id="score-badge"></div>
+        <div class="marks" id="marks"></div>
+      </div>
 
       <div class="card gauges" id="gauges"></div>
 
@@ -617,6 +658,7 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
   <section class="screen screen-end" id="screen-end">
     <div class="col">
       <div class="card end-card">
+        <div class="avatar-wrap big center-self"><canvas class="avatar" id="avatar-end" aria-label="דיוקן הדמות בסיום"></canvas></div>
         <p class="eyebrow" id="end-kicker"></p>
         <h2 class="end-title" id="end-title"></h2>
         <p class="end-text" id="end-text"></p>
@@ -908,6 +950,9 @@ var MockChainAdapter = class {
       score: score.total,
       multiplier: run2.multiplier,
       milestones: run2.milestones.map((m) => m.name),
+      // Enough state to repaint the portrait on the graveyard later.
+      flags: [...run2.flags],
+      res: { ...run2.res },
       passdown: this.#bestTrait(run2),
       at: Date.now()
     };
@@ -2514,6 +2559,7 @@ __export(ui_exports, {
   renderHive: () => renderHive,
   renderId: () => renderId,
   renderInventory: () => renderInventory,
+  renderMarks: () => renderMarks,
   renderOutcome: () => renderOutcome,
   renderPreview: () => renderPreview,
   renderScore: () => renderScore,
@@ -2521,6 +2567,263 @@ __export(ui_exports, {
   renderUnlocks: () => renderUnlocks,
   showScreen: () => showScreen
 });
+
+// src/avatar.js
+var W = 32;
+var H = 40;
+var GROUND = 37;
+var STAGES = [
+  { id: "baby", max: 3, headW: 11, headH: 11, headY: 18, bodyW: 8, bodyH: 6 },
+  { id: "child", max: 12, headW: 8, headH: 8, headY: 15, bodyW: 8, bodyH: 8 },
+  { id: "teen", max: 19, headW: 8, headH: 8, headY: 11, bodyW: 9, bodyH: 9 },
+  { id: "adult", max: 44, headW: 8, headH: 8, headY: 7, bodyW: 10, bodyH: 11 },
+  { id: "mid", max: 62, headW: 8, headH: 8, headY: 7, bodyW: 11, bodyH: 11 },
+  { id: "elder", max: 999, headW: 8, headH: 8, headY: 9, bodyW: 10, bodyH: 10 }
+].map((s) => ({
+  ...s,
+  legH: GROUND - (s.headY + s.headH + 1 + s.bodyH),
+  armH: s.bodyH
+}));
+var stageFor = (age) => STAGES.find((s) => age <= s.max);
+var C = {
+  skin: "#e0a87e",
+  skinPale: "#cfae9a",
+  skinDead: "#8d8a92",
+  shade: "#00000033",
+  hair: "#4a2f1d",
+  hairGrey: "#9aa1ac",
+  hairWhite: "#d8dce3",
+  eye: "#14161c",
+  pants: "#2b3140",
+  shoe: "#15181f",
+  brace: "#c9ced8",
+  gold: "#f5b13d",
+  blood: "#ff5f5f"
+};
+function shirtOf(run2) {
+  if (run2.flags.has("whale")) return "#243252";
+  if (run2.flags.has("off_grid")) return "#3f4a35";
+  if (run2.flags.has("owner") || run2.flags.has("carpet_track")) return "#8a4326";
+  if (run2.flags.has("smuggler")) return "#231f2b";
+  if (run2.flags.has("broke")) return "#54585f";
+  if (run2.flags.has("football")) return "#b8443a";
+  if (run2.res.career >= 60) return "#2f4a5c";
+  return run2.path === "rick" ? "#4a3550" : "#3c4655";
+}
+function hairOf(run2, stage) {
+  if (run2.flags.has("survivor") && run2.age < 40) return null;
+  if (!run2.alive) return "#4a4d55";
+  if (stage.id === "elder") return run2.age >= 75 ? C.hairWhite : C.hairGrey;
+  if (run2.age >= 50) return C.hairGrey;
+  return C.hair;
+}
+function skinOf(run2) {
+  if (!run2.alive) return C.skinDead;
+  if (run2.res.health <= 30 || run2.flags.has("sick")) return C.skinPale;
+  return C.skin;
+}
+function paint(canvas, run2) {
+  const dpr = Math.min(3, globalThis.devicePixelRatio || 1);
+  const box = canvas.getBoundingClientRect();
+  const size = Math.max(1, Math.round((box.width || 64) * dpr));
+  const scale = size / W;
+  canvas.width = size;
+  canvas.height = Math.round(H * scale);
+  const ctx = canvas.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const px = (x, y, w, h, color) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(
+      Math.round(x * scale),
+      Math.round(y * scale),
+      Math.max(1, Math.round(w * scale)),
+      Math.max(1, Math.round(h * scale))
+    );
+  };
+  drawRoy(px, run2);
+}
+function drawRoy(px, run2) {
+  const st = stageFor(run2.age);
+  const cx = 16;
+  const skin = skinOf(run2);
+  const shirt = shirtOf(run2);
+  const hair = hairOf(run2, st);
+  const headX = cx - Math.floor(st.headW / 2);
+  const headY = st.headY;
+  const bodyY = headY + st.headH + 1;
+  const bodyX = cx - Math.floor(st.bodyW / 2);
+  const legY = bodyY + st.bodyH;
+  const shoeY = legY + st.legH;
+  px(cx - 7, shoeY + 2, 14, 1, C.shade);
+  const legW = Math.max(2, Math.floor(st.bodyW / 3));
+  if (st.legH > 0) {
+    px(bodyX + 1, legY, legW, st.legH, C.pants);
+    px(bodyX + st.bodyW - legW - 1, legY, legW, st.legH, C.pants);
+    px(bodyX + 1, shoeY, legW, 2, C.shoe);
+    px(bodyX + st.bodyW - legW - 1, shoeY, legW, 2, C.shoe);
+  }
+  if (run2.flags.has("bad_knee") && st.legH >= 7) {
+    px(bodyX + 1, legY + Math.floor(st.legH / 2), legW, 2, C.brace);
+  }
+  px(bodyX, bodyY, st.bodyW, st.bodyH, shirt);
+  if (run2.flags.has("fit")) {
+    px(bodyX - 1, bodyY, 1, 3, shirt);
+    px(bodyX + st.bodyW, bodyY, 1, 3, shirt);
+  }
+  if (st.id === "mid" && !run2.flags.has("fit")) {
+    px(bodyX, bodyY + st.bodyH - 3, st.bodyW, 3, shirt);
+    px(bodyX - 1, bodyY + st.bodyH - 3, 1, 3, shirt);
+    px(bodyX + st.bodyW, bodyY + st.bodyH - 3, 1, 3, shirt);
+  }
+  if (run2.flags.has("owner") || run2.flags.has("carpet_track")) {
+    px(bodyX + 2, bodyY + 3, st.bodyW - 4, st.bodyH - 3, "#e6dccb");
+  }
+  if (run2.flags.has("broke")) {
+    px(bodyX + 1, bodyY + 4, 2, 2, "#7d838c");
+  }
+  if (run2.flags.has("whale")) {
+    px(cx - 2, bodyY + 1, 1, 1, C.gold);
+    px(cx + 1, bodyY + 1, 1, 1, C.gold);
+    px(cx - 1, bodyY + 2, 2, 1, C.gold);
+    px(cx, bodyY + 3, 1, 1, C.gold);
+  }
+  if (run2.flags.has("record")) {
+    px(bodyX - 1, bodyY + 2, 1, 3, "#4a5a6d");
+  }
+  const armY = bodyY + 1;
+  px(bodyX - 2, armY, 2, st.armH - 2, skin);
+  px(bodyX + st.bodyW, armY, 2, st.armH - 2, skin);
+  if (run2.flags.has("married")) {
+    px(bodyX + st.bodyW + 1, armY + st.armH - 3, 1, 1, C.gold);
+  }
+  px(cx - 1, headY + st.headH, 2, 1, skin);
+  px(headX, headY, st.headW, st.headH, skin);
+  if (hair) {
+    px(headX, headY, st.headW, 2, hair);
+    px(headX, headY, 1, 3, hair);
+    px(headX + st.headW - 1, headY, 1, 3, hair);
+    if (run2.path === "rick" && run2.age >= 20) {
+      px(headX - 1, headY - 1, st.headW + 2, 2, hair);
+    }
+  }
+  if (run2.flags.has("survivor") && run2.age < 40) {
+    px(headX, headY, st.headW, 2, "#c94f6d");
+  }
+  if (run2.flags.has("off_grid")) {
+    px(headX - 1, headY - 1, st.headW + 2, 3, "#5d4a2f");
+  }
+  if (run2.flags.has("bike")) {
+    px(headX - 1, headY - 1, st.headW + 2, 3, "#b03a3a");
+  }
+  if (run2.flags.has("football") && run2.age >= 14 && run2.age <= 22) {
+    px(headX - 1, headY - 1, st.headW + 2, 2, "#b8443a");
+    px(headX + st.headW, headY + 1, 2, 1, "#b8443a");
+  }
+  const eyeY = headY + 3;
+  const tired = run2.res.sanity < 40 || run2.flags.has("addiction");
+  const eyeX1 = headX + 2;
+  const eyeX2 = headX + st.headW - 3;
+  if (run2.alive) {
+    px(eyeX1, eyeY, 1, tired ? 2 : 1, C.eye);
+    px(eyeX2, eyeY, 1, tired ? 2 : 1, C.eye);
+  } else {
+    px(eyeX1, eyeY, 1, 1, C.eye);
+    px(eyeX1 - 1, eyeY - 1, 1, 1, C.eye);
+    px(eyeX2, eyeY, 1, 1, C.eye);
+    px(eyeX2 + 1, eyeY - 1, 1, 1, C.eye);
+  }
+  if ((run2.flags.has("degree") || run2.age >= 50) && st.id !== "baby" && run2.alive) {
+    px(eyeX1 - 1, eyeY, 3, 1, "#2c3440");
+    px(eyeX2 - 1, eyeY, 3, 1, "#2c3440");
+    px(eyeX1 + 2, eyeY, eyeX2 - eyeX1 - 2, 1, "#2c3440");
+  }
+  const mouthY = headY + st.headH - 2;
+  const happy = run2.res.sanity >= 65;
+  const sad = run2.res.sanity < 35;
+  if (run2.alive) {
+    px(cx - 1, mouthY, 2, 1, "#8a4b46");
+    if (happy) {
+      px(cx - 2, mouthY - 1, 1, 1, "#8a4b46");
+      px(cx + 1, mouthY - 1, 1, 1, "#8a4b46");
+    }
+    if (sad) {
+      px(cx - 2, mouthY + 1, 1, 1, "#8a4b46");
+      px(cx + 1, mouthY + 1, 1, 1, "#8a4b46");
+    }
+  }
+  if (run2.res.health < 25 && run2.alive) px(headX + 1, mouthY, 1, 1, C.blood);
+  if (run2.flags.has("off_grid") && run2.age >= 25) {
+    px(headX, mouthY - 1, st.headW, 3, "#3b2a1a");
+    px(cx - 1, mouthY, 2, 1, "#20150c");
+  } else if (st.id === "elder") {
+    px(headX + 1, mouthY + 1, st.headW - 2, 1, C.hairGrey);
+  }
+  if (st.id === "elder" || run2.flags.has("bad_knee") && run2.age >= 55) {
+    px(bodyX + st.bodyW + 2, bodyY + 3, 1, shoeY - bodyY - 1, "#6b4a2c");
+  }
+  if (run2.flags.has("dog") && run2.age <= 17) drawDog(px, shoeY);
+  if (run2.flags.has("kids") && run2.age >= 30 && run2.age <= 60) drawKid(px, shoeY, skin);
+}
+function drawDog(px, shoeY) {
+  const y = shoeY - 3;
+  px(3, y, 6, 3, "#8a6a44");
+  px(8, y - 2, 3, 3, "#8a6a44");
+  px(10, y - 1, 1, 1, C.eye);
+  px(9, y - 3, 1, 1, "#6b4f31");
+  px(3, y + 3, 1, 2, "#8a6a44");
+  px(7, y + 3, 1, 2, "#8a6a44");
+  px(2, y - 1, 1, 2, "#8a6a44");
+}
+function drawKid(px, shoeY, skin) {
+  const y = shoeY - 8;
+  px(25, y, 4, 4, skin);
+  px(26, y + 2, 1, 1, C.eye);
+  px(28, y + 2, 1, 1, C.eye);
+  px(25, y - 1, 4, 1, "#4a2f1d");
+  px(25, y + 5, 4, 5, "#5a7a8a");
+  px(25, y + 10, 1, 3, "#2b3140");
+  px(28, y + 10, 1, 3, "#2b3140");
+}
+var MARKS = [
+  { flag: "survivor", when: (r) => r.age < 40, label: "\u05D1\u05E0\u05D3\u05E0\u05D4" },
+  { flag: "off_grid", label: "\u05D6\u05E7\u05DF \u05D5\u05DB\u05D5\u05D1\u05E2 \u05D2\u05E8\u05D1" },
+  { flag: "bad_knee", label: "\u05E1\u05D3 \u05D1\u05E8\u05DA" },
+  { flag: "owner", label: "\u05E1\u05D9\u05E0\u05E8 \u05D4\u05D7\u05E0\u05D5\u05EA" },
+  { flag: "carpet_track", label: "\u05E1\u05D9\u05E0\u05E8 \u05D4\u05D7\u05E0\u05D5\u05EA", skipIf: "owner" },
+  { flag: "married", label: "\u05D8\u05D1\u05E2\u05EA" },
+  { flag: "kids", when: (r) => r.age >= 30 && r.age <= 60, label: "\u05D9\u05DC\u05D3\u05D4 \u05DC\u05E6\u05D9\u05D3\u05D5" },
+  { flag: "dog", when: (r) => r.age <= 17, label: "\u05D1\u05D0\u05D3\u05D9" },
+  { flag: "whale", label: "\u05E9\u05E8\u05E9\u05E8\u05EA \u05D6\u05D4\u05D1" },
+  { flag: "broke", label: "\u05D8\u05DC\u05D0\u05D9" },
+  { flag: "record", label: "\u05E7\u05E2\u05E7\u05D5\u05E2" },
+  { flag: "football", when: (r) => r.age >= 14 && r.age <= 22, label: "\u05DB\u05D5\u05D1\u05E2 \u05D4\u05E0\u05D1\u05D7\u05E8\u05EA" },
+  { flag: "bike", label: "\u05E7\u05E1\u05D3\u05D4" },
+  { flag: "fit", label: "\u05DB\u05EA\u05E4\u05D9\u05D9\u05DD" },
+  { flag: "degree", label: "\u05DE\u05E9\u05E7\u05E4\u05D9\u05D9\u05DD" },
+  { flag: "addiction", label: "\u05E2\u05D9\u05E0\u05D9\u05D9\u05DD \u05E9\u05E7\u05D5\u05E2\u05D5\u05EA" }
+];
+function marksOf(run2) {
+  const out = [];
+  for (const m of MARKS) {
+    if (!run2.flags.has(m.flag)) continue;
+    if (m.skipIf && run2.flags.has(m.skipIf)) continue;
+    if (m.when && !m.when(run2)) continue;
+    if (!out.includes(m.label)) out.push(m.label);
+  }
+  if (run2.age >= 63) out.push("\u05DE\u05E7\u05DC \u05D4\u05DC\u05D9\u05DB\u05D4");
+  return out;
+}
+var stageName = (age) => ({
+  baby: "\u05EA\u05D9\u05E0\u05D5\u05E7",
+  child: "\u05D9\u05DC\u05D3",
+  teen: "\u05E0\u05E2\u05E8",
+  adult: "\u05D1\u05D5\u05D2\u05E8",
+  mid: "\u05D0\u05DE\u05E6\u05E2 \u05D4\u05D7\u05D9\u05D9\u05DD",
+  elder: "\u05D6\u05E7\u05DF"
+})[stageFor(age).id];
+
+// src/ui.js
 var $ = (sel, root = document) => root.querySelector(sel);
 var $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 function esc(str) {
@@ -2534,25 +2837,25 @@ function showScreen(id) {
   window.scrollTo({ top: 0, behavior: "instant" });
 }
 var PATH_NAME = { morty: "SAFE YIELD", rick: "DEGEN" };
-function renderId(el2, run2, score) {
-  el2.className = `card id-card ${run2.path}`;
-  el2.innerHTML = `
-    <div class="id-main">
-      <div class="id-badges">
-        <span class="pill pill-path">${PATH_NAME[run2.path]}</span>
-        <span class="pill pill-nat">ROY #${run2.tokenId}</span>
-      </div>
-      <div class="id-name">${run2.path === "rick" ? "\u05E8\u05D5\u05D9 // \u05DE\u05D7\u05D5\u05E5 \u05DC\u05E8\u05E9\u05EA" : "\u05E8\u05D5\u05D9"}</div>
-      <div class="id-meta">
-        <span>\u05D2\u05D9\u05DC <b>${run2.age}</b></span>
-        <span>\u05E4\u05E8\u05E7 <b>${run2.chapter + 1}</b></span>
-        <span>\u05DE\u05DB\u05E4\u05D9\u05DC <b class="num">\xD7${run2.multiplier.toFixed(2)}</b></span>
-      </div>
+function renderId(els, run2, score) {
+  els.card.className = `card id-card ${run2.path}`;
+  els.main.innerHTML = `
+    <div class="id-badges">
+      <span class="pill pill-path">${PATH_NAME[run2.path]}</span>
+      <span class="pill pill-nat">${esc(stageName(run2.age))}</span>
     </div>
-    <div class="score-badge">
-      <span>SCORE</span>
-      <b class="${score >= 1e4 ? "long" : ""}">${score.toLocaleString("en-US")}</b>
+    <div class="id-name">${run2.path === "rick" ? "\u05E8\u05D5\u05D9 // \u05DE\u05D7\u05D5\u05E5 \u05DC\u05E8\u05E9\u05EA" : "\u05E8\u05D5\u05D9"}</div>
+    <div class="id-meta">
+      <span>\u05D2\u05D9\u05DC <b>${run2.age}</b></span>
+      <span>\u05E4\u05E8\u05E7 <b>${run2.chapter + 1}</b></span>
+      <span>\u05DE\u05DB\u05E4\u05D9\u05DC <b class="num">\xD7${run2.multiplier.toFixed(2)}</b></span>
     </div>`;
+  els.score.innerHTML = `
+    <span>SCORE</span>
+    <b class="${score >= 1e4 ? "long" : ""}">${score.toLocaleString("en-US")}</b>`;
+}
+function renderMarks(el2, run2, freshSet) {
+  el2.innerHTML = marksOf(run2).map((m) => `<span class="mark${freshSet?.has(m) ? " fresh" : ""}">${esc(m)}</span>`).join("");
 }
 function renderPreview(el2, run2) {
   const traits = Object.entries(run2.traits).map(([k, v]) => `
@@ -2561,7 +2864,6 @@ function renderPreview(el2, run2) {
       <div class="g-bar"><i style="width:${v * 10}%;background:var(--cool)"></i></div>
       <b>${v}</b>
     </div>`).join("");
-  el2.className = `card id-card-preview ${run2.path}`;
   el2.innerHTML = `
     <div class="id-badges" style="margin-block-end:.5rem">
       <span class="pill pill-path">${PATH_NAME[run2.path]}</span>
@@ -2724,18 +3026,30 @@ function renderBoard(el2) {
     </li>`).join("");
 }
 function renderGraves(el2) {
-  const g = chain.state.graves;
-  if (!g.length) {
+  const graves = chain.state.graves;
+  if (!graves.length) {
     el2.innerHTML = '<p class="empty-note">\u05D1\u05D9\u05EA \u05D4\u05E7\u05D1\u05E8\u05D5\u05EA \u05E8\u05D9\u05E7.</p>';
     return;
   }
-  el2.innerHTML = g.slice(0, 12).map((x) => `
+  const shown = graves.slice(0, 12);
+  el2.innerHTML = shown.map((x) => `
     <div class="grave">
+      <div class="avatar-wrap grave-av"><canvas class="avatar"></canvas></div>
       <b>ROY #${x.tokenId}</b>
       <span>\u05D2\u05D9\u05DC ${x.age} \xB7 ${esc(x.endTitle)}</span>
-      <span>${num(x.score.toLocaleString("en-US"))} \u05E0\u05E7\u05F3</span>
+      <span class="grave-score">${num(x.score.toLocaleString("en-US"))} \u05E0\u05E7\u05F3</span>
       <span class="sbt">SOULBOUND \xB7 ${TRAITS[x.passdown]?.he ?? x.passdown} +1</span>
     </div>`).join("");
+  $$(".grave canvas", el2).forEach((canvas, i) => paint(canvas, graveRun(shown[i])));
+}
+function graveRun(g) {
+  return {
+    age: g.age,
+    path: g.path,
+    alive: false,
+    flags: new Set(g.flags ?? []),
+    res: g.res ?? { health: 0, sanity: 0, career: 0 }
+  };
 }
 function renderCollection(grid, prog) {
   const have = unlocked();
@@ -2800,6 +3114,12 @@ function init() {
     "pace-note",
     "mode-note",
     "id-card",
+    "id-main",
+    "score-badge",
+    "marks",
+    "avatar",
+    "avatar-preview",
+    "avatar-end",
     "gauges",
     "history",
     "inv-card",
@@ -2910,6 +3230,7 @@ function updateNotes() {
 function updatePreview() {
   const preview = createRun({ ...readConfig(), legacy: chain.legacy });
   renderPreview(el["nft-preview"], preview);
+  paint(el["avatar-preview"], preview);
   el["mint-note"].textContent = chain.legacy ? `${chain.legacy.id} \u05D4\u05D5\u05E8\u05D9\u05E9 +1 \u05DC${TRAIT_HE[chain.legacy.passdown]}.` : "";
   el["mint-note"].classList.remove("err");
 }
@@ -2927,13 +3248,25 @@ function startRun() {
   chain.mintRoy(run);
   currentEvent = null;
   pendingDigest = [];
+  shownMarks = /* @__PURE__ */ new Set();
   el["timer-wrap"].classList.toggle("off", !run.useTimer);
   go("screen-run");
   paintRun();
   beginChapter();
 }
+var shownMarks = /* @__PURE__ */ new Set();
 function paintRun() {
-  renderId(el["id-card"], run, scoreRun(run).total);
+  renderId({ card: el["id-card"], main: el["id-main"], score: el["score-badge"] }, run, scoreRun(run).total);
+  const marks = marksOf(run);
+  const fresh = new Set(marks.filter((m) => !shownMarks.has(m)));
+  renderMarks(el.marks, run, fresh);
+  paint(el.avatar, run);
+  if (fresh.size && shownMarks.size) {
+    el.avatar.classList.remove("pop");
+    void el.avatar.offsetWidth;
+    el.avatar.classList.add("pop");
+  }
+  shownMarks = new Set(marks);
   renderGauges(el.gauges, run);
   renderHistory(el.history, run);
   renderInventory(el["inv-card"], el["inv-list"], run);
@@ -3086,6 +3419,7 @@ function finishRun() {
   el["end-text"].innerHTML = `${esc((run.ending?.text ?? "").replace("{age}", run.age))}<br>${esc(g.text)}
     <br><small>\u05D4\u05D3\u05D5\u05E8 \u05D4\u05D1\u05D0 \u05D9\u05D5\u05E8\u05E9 <span class="num">+1</span> \u05DC${TRAIT_HE[sbt.passdown]}${payout ? ` \xB7 \u05EA\u05D2\u05DE\u05D5\u05DC \u05E2\u05D5\u05E0\u05D4 <span class="num">${payout} $TICKET</span>` : ""}</small>`;
   el["end-total"].textContent = score.total.toLocaleString("en-US");
+  paint(el["avatar-end"], run);
   renderScore(el["score-board"], score);
   renderHistory(el["end-history"], run, { full: true });
   renderUnlocks(el.unlocks, fresh);
