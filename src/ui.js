@@ -30,17 +30,15 @@ export function showScreen(id) {
 const PATH_NAME = { morty: 'SAFE YIELD', rick: 'DEGEN' };
 
 export function renderId(els, run, score) {
-  els.card.className = `card id-card ${run.path}`;
+  // Toggle, never reassign — the card also carries its layout classes.
+  els.card.classList.toggle('rick', run.path === 'rick');
+  els.card.classList.toggle('morty', run.path === 'morty');
   els.main.innerHTML = `
-    <div class="id-badges">
-      <span class="pill pill-path">${PATH_NAME[run.path]}</span>
-      <span class="pill pill-nat">${esc(stageName(run.age))}</span>
-    </div>
-    <div class="id-name">${run.path === 'rick' ? 'רוי // מחוץ לרשת' : 'רוי'}</div>
+    <div class="id-name">רוי <span class="pill pill-path">${PATH_NAME[run.path]}</span></div>
     <div class="id-meta">
-      <span>גיל <b>${run.age}</b></span>
+      <span>${esc(stageName(run.age))} · גיל <b>${run.age}</b></span>
       <span>פרק <b>${run.chapter + 1}</b></span>
-      <span>מכפיל <b class="num">×${run.multiplier.toFixed(2)}</b></span>
+      <span class="num">×${run.multiplier.toFixed(2)}</span>
     </div>`;
   els.score.innerHTML = `
     <span>SCORE</span>
@@ -73,17 +71,20 @@ export function renderPreview(el, run) {
 
 const RES = { health: 'בריאות', sanity: 'שפיות', career: 'קריירה' };
 
+/** The HUD gauges: three bars and the balance on one line, so the status card
+ *  stays short enough that the decision sheet can never cover it. */
 export function renderGauges(el, run) {
-  el.innerHTML = ['health', 'sanity', 'career'].map((k) => {
-    const v = run.res[k];
-    return `
-      <div class="g-row g-${k}${v <= 25 ? ' low' : ''}">
-        <span>${RES[k]}</span>
-        <div class="g-bar"><i style="width:${v}%"></i></div>
-        <b>${v}</b>
-      </div>`;
-  }).join('') + `
-    <div class="g-money"><span>הון</span><b class="${run.capital < 0 ? 'neg' : ''}">${money(run.capital)}</b></div>`;
+  const cells = ['health', 'sanity', 'career'].map((k) => `
+    <div class="g g-${k}${run.res[k] <= 25 ? ' low' : ''}">
+      <span>${RES[k]} <b>${run.res[k]}</b></span>
+      <div class="g-bar"><i style="width:${run.res[k]}%"></i></div>
+    </div>`).join('');
+
+  el.innerHTML = `${cells}
+    <div class="g g-cash">
+      <span>הון</span>
+      <b class="${run.capital < 0 ? 'neg' : ''}">${money(run.capital)}</b>
+    </div>`;
 }
 
 /* ───────────────────────── history ───────────────────────── */

@@ -214,6 +214,32 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 .card[open] > summary { margin-block-end: .7rem; }
 
 /* ─────────────── identity card ─────────────── */
+.status {
+  position: sticky; top: calc(var(--topbar-h, 46px) + .5rem); z-index: 10;
+  display: grid; gap: .1rem .7rem; padding: .7rem .8rem;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "av head score" "av gauges gauges" "marks marks marks";
+  align-items: center;
+  box-shadow: 0 10px 24px -18px rgb(0 0 0 / .95);
+}
+.status .avatar-wrap { grid-area: av; align-self: stretch; }
+.status .id-main { grid-area: head; }
+.status .score-badge { grid-area: score; }
+.status .gauges {
+  grid-area: gauges; padding-block-start: .4rem;
+  display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: .5rem; align-items: end;
+}
+.g { display: grid; gap: 3px; min-width: 0; }
+.g > span { font-size: .6rem; color: var(--muted); white-space: nowrap; }
+.g > span b { color: var(--text); font-family: var(--mono); font-size: .68rem; }
+.g.low > span b { color: var(--bad); }
+.g-cash { justify-items: start; }
+.g-cash b {
+  font-family: var(--mono); font-size: .82rem; color: var(--score);
+  direction: ltr; unicode-bidi: isolate;
+}
+.g-cash b.neg { color: var(--bad); }
+.status .marks { grid-area: marks; }
 .id-card { display: grid; grid-template-columns: 1fr auto; gap: .7rem; align-items: center; }
 .id-main { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
 .id-badges { display: flex; gap: .35rem; flex-wrap: wrap; }
@@ -225,7 +251,7 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 .pill-path { color: var(--cool); }
 .id-card.rick .pill-path { color: var(--hot); }
 .pill-nat { color: var(--muted); }
-.id-name { font-size: 1.3rem; font-weight: 900; }
+.id-name { font-size: 1.15rem; font-weight: 900; }
 .id-meta { display: flex; gap: .55rem; font-size: .78rem; color: var(--muted); flex-wrap: wrap; }
 .id-meta b { color: var(--text); }
 .score-badge {
@@ -241,22 +267,22 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 .score-badge b.long { font-size: 1.3rem; }
 
 /* ─────────────── gauges ─────────────── */
-.gauges { display: grid; gap: .55rem; }
-.g-row { display: grid; grid-template-columns: 4.2rem 1fr 2.2rem; gap: .6rem; align-items: center; }
-.g-row span { font-size: .8rem; color: var(--muted); }
-.g-bar { height: 8px; border-radius: 99px; background: var(--line-soft); overflow: hidden; }
+.gauges { display: grid; gap: .3rem; }
+.g-row { display: grid; grid-template-columns: 3.6rem 1fr 1.9rem; gap: .5rem; align-items: center; }
+.g-row span { font-size: .72rem; color: var(--muted); }
+.g-bar { height: 6px; border-radius: 99px; background: var(--line-soft); overflow: hidden; }
 .g-bar i { display: block; height: 100%; border-radius: 99px; transition: width .45s cubic-bezier(.2,.8,.2,1); }
-.g-row b { font-family: var(--mono); font-size: .82rem; text-align: start; }
+.g-row b { font-family: var(--mono); font-size: .74rem; text-align: start; }
 .g-health i { background: var(--bad); }
 .g-sanity i { background: #a97bff; }
 .g-career i { background: var(--cool); }
 .g-row.low b { color: var(--bad); }
 .g-money {
   display: flex; justify-content: space-between; align-items: baseline;
-  padding-block-start: .55rem; border-block-start: 1px solid var(--line-soft);
+  padding-block-start: .4rem; margin-block-start: .2rem; border-block-start: 1px solid var(--line-soft);
 }
-.g-money span { font-size: .8rem; color: var(--muted); }
-.g-money b { font-family: var(--mono); font-size: 1.05rem; color: var(--score); direction: ltr; unicode-bidi: isolate; }
+.g-money span { font-size: .72rem; color: var(--muted); }
+.g-money b { font-family: var(--mono); font-size: .92rem; color: var(--score); direction: ltr; unicode-bidi: isolate; }
 .g-money b.neg { color: var(--bad); }
 
 /* ─────────────── history table ─────────────── */
@@ -315,7 +341,7 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
   background: var(--card); border: 1px solid var(--line);
   border-radius: var(--r) var(--r) 0 0;
   box-shadow: 0 -18px 40px -20px rgb(0 0 0 / .9);
-  max-height: 66dvh; overflow-y: auto; pointer-events: auto;
+  max-height: min(56dvh, var(--sheet-max, 56dvh)); overflow-y: auto; pointer-events: auto;
 }
 .timer { height: 3px; border-radius: 99px; background: var(--line-soft); overflow: hidden; margin-block-end: .8rem; }
 .timer i { display: block; height: 100%; width: 100%; background: var(--good); transform-origin: right; }
@@ -475,7 +501,7 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 
 /* ─────────────── pixel portrait ─────────────── */
 .avatar-wrap {
-  flex: none; width: 72px; display: grid; place-items: end center;
+  flex: none; width: 62px; display: grid; place-items: end center;
   border-radius: 10px; padding: .35rem;
   background: radial-gradient(circle at 50% 85%, rgb(76 196 240 / .1), transparent 70%);
 }
@@ -491,9 +517,12 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 
 .id-card { grid-template-columns: auto 1fr auto; }
 .marks {
-  grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .3rem;
-  padding-block-start: .6rem; border-block-start: 1px solid var(--line-soft);
+  display: flex; gap: .3rem; overflow-x: auto; scrollbar-width: none;
+  padding-block-start: .5rem; margin-block-start: .45rem;
+  border-block-start: 1px solid var(--line-soft);
 }
+.marks::-webkit-scrollbar { display: none; }
+.mark { white-space: nowrap; flex: none; }
 .marks:empty { display: none; }
 .mark {
   font-size: .68rem; padding: .1rem .45rem; border-radius: 99px;
@@ -505,3 +534,6 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 .preview-card > div:last-child { flex: 1; min-width: 0; }
 .grave { display: grid; gap: .15rem; justify-items: center; text-align: center; }
 .grave-av { width: 46px; background: none; padding: 0 0 .3rem; }
+.status .id-name { display: flex; align-items: center; gap: .4rem; }
+.status .id-name .pill { font-size: .55rem; padding: .1rem .4rem; }
+.status .id-meta { gap: .45rem; font-size: .74rem; }

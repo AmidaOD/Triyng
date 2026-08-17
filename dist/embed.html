@@ -226,6 +226,32 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 .card[open] > summary { margin-block-end: .7rem; }
 
 /* ─────────────── identity card ─────────────── */
+.status {
+  position: sticky; top: calc(var(--topbar-h, 46px) + .5rem); z-index: 10;
+  display: grid; gap: .1rem .7rem; padding: .7rem .8rem;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "av head score" "av gauges gauges" "marks marks marks";
+  align-items: center;
+  box-shadow: 0 10px 24px -18px rgb(0 0 0 / .95);
+}
+.status .avatar-wrap { grid-area: av; align-self: stretch; }
+.status .id-main { grid-area: head; }
+.status .score-badge { grid-area: score; }
+.status .gauges {
+  grid-area: gauges; padding-block-start: .4rem;
+  display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: .5rem; align-items: end;
+}
+.g { display: grid; gap: 3px; min-width: 0; }
+.g > span { font-size: .6rem; color: var(--muted); white-space: nowrap; }
+.g > span b { color: var(--text); font-family: var(--mono); font-size: .68rem; }
+.g.low > span b { color: var(--bad); }
+.g-cash { justify-items: start; }
+.g-cash b {
+  font-family: var(--mono); font-size: .82rem; color: var(--score);
+  direction: ltr; unicode-bidi: isolate;
+}
+.g-cash b.neg { color: var(--bad); }
+.status .marks { grid-area: marks; }
 .id-card { display: grid; grid-template-columns: 1fr auto; gap: .7rem; align-items: center; }
 .id-main { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
 .id-badges { display: flex; gap: .35rem; flex-wrap: wrap; }
@@ -237,7 +263,7 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 .pill-path { color: var(--cool); }
 .id-card.rick .pill-path { color: var(--hot); }
 .pill-nat { color: var(--muted); }
-.id-name { font-size: 1.3rem; font-weight: 900; }
+.id-name { font-size: 1.15rem; font-weight: 900; }
 .id-meta { display: flex; gap: .55rem; font-size: .78rem; color: var(--muted); flex-wrap: wrap; }
 .id-meta b { color: var(--text); }
 .score-badge {
@@ -253,22 +279,22 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 .score-badge b.long { font-size: 1.3rem; }
 
 /* ─────────────── gauges ─────────────── */
-.gauges { display: grid; gap: .55rem; }
-.g-row { display: grid; grid-template-columns: 4.2rem 1fr 2.2rem; gap: .6rem; align-items: center; }
-.g-row span { font-size: .8rem; color: var(--muted); }
-.g-bar { height: 8px; border-radius: 99px; background: var(--line-soft); overflow: hidden; }
+.gauges { display: grid; gap: .3rem; }
+.g-row { display: grid; grid-template-columns: 3.6rem 1fr 1.9rem; gap: .5rem; align-items: center; }
+.g-row span { font-size: .72rem; color: var(--muted); }
+.g-bar { height: 6px; border-radius: 99px; background: var(--line-soft); overflow: hidden; }
 .g-bar i { display: block; height: 100%; border-radius: 99px; transition: width .45s cubic-bezier(.2,.8,.2,1); }
-.g-row b { font-family: var(--mono); font-size: .82rem; text-align: start; }
+.g-row b { font-family: var(--mono); font-size: .74rem; text-align: start; }
 .g-health i { background: var(--bad); }
 .g-sanity i { background: #a97bff; }
 .g-career i { background: var(--cool); }
 .g-row.low b { color: var(--bad); }
 .g-money {
   display: flex; justify-content: space-between; align-items: baseline;
-  padding-block-start: .55rem; border-block-start: 1px solid var(--line-soft);
+  padding-block-start: .4rem; margin-block-start: .2rem; border-block-start: 1px solid var(--line-soft);
 }
-.g-money span { font-size: .8rem; color: var(--muted); }
-.g-money b { font-family: var(--mono); font-size: 1.05rem; color: var(--score); direction: ltr; unicode-bidi: isolate; }
+.g-money span { font-size: .72rem; color: var(--muted); }
+.g-money b { font-family: var(--mono); font-size: .92rem; color: var(--score); direction: ltr; unicode-bidi: isolate; }
 .g-money b.neg { color: var(--bad); }
 
 /* ─────────────── history table ─────────────── */
@@ -327,7 +353,7 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
   background: var(--card); border: 1px solid var(--line);
   border-radius: var(--r) var(--r) 0 0;
   box-shadow: 0 -18px 40px -20px rgb(0 0 0 / .9);
-  max-height: 66dvh; overflow-y: auto; pointer-events: auto;
+  max-height: min(56dvh, var(--sheet-max, 56dvh)); overflow-y: auto; pointer-events: auto;
 }
 .timer { height: 3px; border-radius: 99px; background: var(--line-soft); overflow: hidden; margin-block-end: .8rem; }
 .timer i { display: block; height: 100%; width: 100%; background: var(--good); transform-origin: right; }
@@ -487,7 +513,7 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 
 /* ─────────────── pixel portrait ─────────────── */
 .avatar-wrap {
-  flex: none; width: 72px; display: grid; place-items: end center;
+  flex: none; width: 62px; display: grid; place-items: end center;
   border-radius: 10px; padding: .35rem;
   background: radial-gradient(circle at 50% 85%, rgb(76 196 240 / .1), transparent 70%);
 }
@@ -503,9 +529,12 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 
 .id-card { grid-template-columns: auto 1fr auto; }
 .marks {
-  grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .3rem;
-  padding-block-start: .6rem; border-block-start: 1px solid var(--line-soft);
+  display: flex; gap: .3rem; overflow-x: auto; scrollbar-width: none;
+  padding-block-start: .5rem; margin-block-start: .45rem;
+  border-block-start: 1px solid var(--line-soft);
 }
+.marks::-webkit-scrollbar { display: none; }
+.mark { white-space: nowrap; flex: none; }
 .marks:empty { display: none; }
 .mark {
   font-size: .68rem; padding: .1rem .45rem; border-radius: 99px;
@@ -517,6 +546,9 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 .preview-card > div:last-child { flex: 1; min-width: 0; }
 .grave { display: grid; gap: .15rem; justify-items: center; text-align: center; }
 .grave-av { width: 46px; background: none; padding: 0 0 .3rem; }
+.status .id-name { display: flex; align-items: center; gap: .4rem; }
+.status .id-name .pill { font-size: .55rem; padding: .1rem .4rem; }
+.status .id-meta { gap: .45rem; font-size: .74rem; }
 </style>
 <header class="topbar">
   <button class="top-back" id="btn-top-back" hidden aria-label="חזרה">‹</button>
@@ -616,14 +648,13 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
   <section class="screen screen-run" id="screen-run">
     <div class="col col-run">
 
-      <div class="card id-card" id="id-card">
+      <div class="card status" id="id-card">
         <div class="avatar-wrap"><canvas class="avatar" id="avatar" aria-label="דיוקן הדמות"></canvas></div>
         <div class="id-main" id="id-main"></div>
         <div class="score-badge" id="score-badge"></div>
+        <div class="gauges" id="gauges"></div>
         <div class="marks" id="marks"></div>
       </div>
-
-      <div class="card gauges" id="gauges"></div>
 
       <div class="card table-card">
         <table class="history">
@@ -2838,17 +2869,14 @@ function showScreen(id) {
 }
 var PATH_NAME = { morty: "SAFE YIELD", rick: "DEGEN" };
 function renderId(els, run2, score) {
-  els.card.className = `card id-card ${run2.path}`;
+  els.card.classList.toggle("rick", run2.path === "rick");
+  els.card.classList.toggle("morty", run2.path === "morty");
   els.main.innerHTML = `
-    <div class="id-badges">
-      <span class="pill pill-path">${PATH_NAME[run2.path]}</span>
-      <span class="pill pill-nat">${esc(stageName(run2.age))}</span>
-    </div>
-    <div class="id-name">${run2.path === "rick" ? "\u05E8\u05D5\u05D9 // \u05DE\u05D7\u05D5\u05E5 \u05DC\u05E8\u05E9\u05EA" : "\u05E8\u05D5\u05D9"}</div>
+    <div class="id-name">\u05E8\u05D5\u05D9 <span class="pill pill-path">${PATH_NAME[run2.path]}</span></div>
     <div class="id-meta">
-      <span>\u05D2\u05D9\u05DC <b>${run2.age}</b></span>
+      <span>${esc(stageName(run2.age))} \xB7 \u05D2\u05D9\u05DC <b>${run2.age}</b></span>
       <span>\u05E4\u05E8\u05E7 <b>${run2.chapter + 1}</b></span>
-      <span>\u05DE\u05DB\u05E4\u05D9\u05DC <b class="num">\xD7${run2.multiplier.toFixed(2)}</b></span>
+      <span class="num">\xD7${run2.multiplier.toFixed(2)}</span>
     </div>`;
   els.score.innerHTML = `
     <span>SCORE</span>
@@ -2874,16 +2902,16 @@ function renderPreview(el2, run2) {
 }
 var RES = { health: "\u05D1\u05E8\u05D9\u05D0\u05D5\u05EA", sanity: "\u05E9\u05E4\u05D9\u05D5\u05EA", career: "\u05E7\u05E8\u05D9\u05D9\u05E8\u05D4" };
 function renderGauges(el2, run2) {
-  el2.innerHTML = ["health", "sanity", "career"].map((k) => {
-    const v = run2.res[k];
-    return `
-      <div class="g-row g-${k}${v <= 25 ? " low" : ""}">
-        <span>${RES[k]}</span>
-        <div class="g-bar"><i style="width:${v}%"></i></div>
-        <b>${v}</b>
-      </div>`;
-  }).join("") + `
-    <div class="g-money"><span>\u05D4\u05D5\u05DF</span><b class="${run2.capital < 0 ? "neg" : ""}">${money(run2.capital)}</b></div>`;
+  const cells = ["health", "sanity", "career"].map((k) => `
+    <div class="g g-${k}${run2.res[k] <= 25 ? " low" : ""}">
+      <span>${RES[k]} <b>${run2.res[k]}</b></span>
+      <div class="g-bar"><i style="width:${run2.res[k]}%"></i></div>
+    </div>`).join("");
+  el2.innerHTML = `${cells}
+    <div class="g g-cash">
+      <span>\u05D4\u05D5\u05DF</span>
+      <b class="${run2.capital < 0 ? "neg" : ""}">${money(run2.capital)}</b>
+    </div>`;
 }
 function renderHistory(el2, run2, { full = false } = {}) {
   if (!run2.lifeLog.length) {
@@ -3197,6 +3225,12 @@ function init() {
     }
   });
   new ResizeObserver(syncSheetHeight).observe(el.sheet);
+  new ResizeObserver(syncSheetHeight).observe(el["id-card"]);
+  window.addEventListener("resize", syncSheetHeight);
+  const topbar = document.querySelector(".topbar");
+  new ResizeObserver(() => {
+    document.documentElement.style.setProperty("--topbar-h", `${topbar.offsetHeight}px`);
+  }).observe(topbar);
 }
 var ROOT_SCREENS = /* @__PURE__ */ new Set(["screen-boot", "screen-run"]);
 var screen = "screen-boot";
@@ -3209,7 +3243,11 @@ function goBack() {
   go(run && !run.ended ? "screen-run" : "screen-boot");
 }
 function syncSheetHeight() {
-  document.documentElement.style.setProperty("--sheet-h", `${el.sheet.offsetHeight}px`);
+  const root = document.documentElement.style;
+  root.setProperty("--sheet-h", `${el.sheet.offsetHeight}px`);
+  const hudBottom = el["id-card"].getBoundingClientRect().bottom;
+  const room = Math.max(200, window.innerHeight - hudBottom - 14);
+  root.setProperty("--sheet-max", `${Math.round(room)}px`);
 }
 function updateBootCounts() {
   const p = progress();

@@ -94,8 +94,15 @@ function init() {
     if (confirm('למחוק את כל הריצות, ההישגים והיתרות המקומיות?')) { chain.wipe(); openLegacy(); updateBootCounts(); }
   });
 
-  // The sheet floats over the column, so the column needs to know how tall it is.
+  // The sheet floats over the column and the status card sticks under the top
+  // bar, so the layout needs both of their real heights.
   new ResizeObserver(syncSheetHeight).observe(el.sheet);
+  new ResizeObserver(syncSheetHeight).observe(el['id-card']);
+  window.addEventListener('resize', syncSheetHeight);
+  const topbar = document.querySelector('.topbar');
+  new ResizeObserver(() => {
+    document.documentElement.style.setProperty('--topbar-h', `${topbar.offsetHeight}px`);
+  }).observe(topbar);
 }
 
 /* ───────────────────────── navigation ───────────────────────── */
@@ -114,7 +121,14 @@ function goBack() {
 }
 
 function syncSheetHeight() {
-  document.documentElement.style.setProperty('--sheet-h', `${el.sheet.offsetHeight}px`);
+  const root = document.documentElement.style;
+  root.setProperty('--sheet-h', `${el.sheet.offsetHeight}px`);
+
+  // Cap the sheet at whatever is left under the sticky status card, so the
+  // decision can never grow over the character it is about.
+  const hudBottom = el['id-card'].getBoundingClientRect().bottom;
+  const room = Math.max(200, window.innerHeight - hudBottom - 14);
+  root.setProperty('--sheet-max', `${Math.round(room)}px`);
 }
 
 function updateBootCounts() {
