@@ -178,7 +178,7 @@ class MockChainAdapter {
   get legacy() { return this.state.lastLegacy; }
 
   wipe() {
-    localStorage.removeItem(KEY);
+    try { localStorage.removeItem(KEY); } catch { /* storage unavailable */ }
     this.state = load();
     this.txs = [];
     this.emit();
