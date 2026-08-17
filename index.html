@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROJECT ROY — Off the Grid</title>
+<meta name="description" content="On-chain rogue-lite של סימולציית חיים. ריצה אחת. חיים שלמים. Permadeath.">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%95%B9%EF%B8%8F%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+<div class="scanlines" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">▚</span>
+    <span class="brand-name">PROJECT <b>ROY</b></span>
+    <span class="brand-sub">Off the Grid</span>
+  </div>
+  <div class="chain-strip">
+    <span class="chip" id="chip-net" title="רשת"><i class="dot"></i> BASE&nbsp;SEPOLIA <em class="mock">MOCK</em></span>
+    <span class="chip" id="chip-pool" title="מאגר הפרסים של העונה">POOL <b>0</b> $TICKET</span>
+    <span class="chip" id="chip-ticket" title="יתרת הארנק">0 $TICKET</span>
+    <button class="chip chip-btn" id="btn-wallet">חבר ארנק</button>
+  </div>
+</header>
+
+<main id="app">
+
+  <!-- ═══════════ BOOT ═══════════ -->
+  <section class="screen screen-boot is-active" id="screen-boot">
+    <div class="cabinet">
+      <p class="kicker">BLIPS &amp; CHITZ™ ARCADE · CABINET #2</p>
+      <h1 class="title">ROY<span>:</span> A LIFE WELL LIVED</h1>
+      <p class="tagline">חיים שלמים בעשר דקות. ריצה אחת. בלי טעינה מחדש.</p>
+      <ul class="boot-facts">
+        <li><b>Permadeath</b> — הדמות נשרפת. הריצה נצרבת כ־Soulbound.</li>
+        <li><b>Two paths</b> — Safe Yield של מורטי מול Degen Risk של ריק.</li>
+        <li><b>Provably fair</b> — כל הטלת קובייה נגזרת מה־seed ומוצגת בלוג.</li>
+      </ul>
+      <button class="btn btn-primary btn-xl" id="btn-boot">הכנס מטבע</button>
+      <div class="boot-links">
+        <button class="linkish" id="btn-goto-collection">🏆 האוסף שלי</button>
+        <button class="linkish" id="btn-goto-legacy">לוח תוצאות</button>
+        <button class="linkish" id="btn-goto-about">איך זה עובד</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ MINT ═══════════ -->
+  <section class="screen screen-mint" id="screen-mint">
+    <h2 class="screen-title">MINT · יצירת זהות</h2>
+
+    <div class="mint-grid">
+      <div class="mint-config">
+        <fieldset class="picker">
+          <legend>מסלול חיים</legend>
+          <label class="path-card" data-path="morty">
+            <input type="radio" name="path" value="morty" checked>
+            <span class="path-body">
+              <span class="path-head"><b>MORTY</b><em>Safe Yield</em></span>
+              <span class="path-text">חנות שטיחים, משכנתא, ביטוח. שרידות גבוהה, מכפיל נמוך.</span>
+              <span class="path-stats"><i>שרידות ▲▲▲</i><i>מכפיל ×1.0</i></span>
+            </span>
+          </label>
+          <label class="path-card" data-path="rick">
+            <input type="radio" name="path" value="rick">
+            <span class="path-body">
+              <span class="path-head"><b>RICK</b><em>Degen Risk</em></span>
+              <span class="path-text">שרוף את ה־SSN, חיה מחוץ לרשת. Permadeath אמיתי, מכפיל עצום.</span>
+              <span class="path-stats"><i>שרידות ▲</i><i>מכפיל ×1.6+</i></span>
+            </span>
+          </label>
+        </fieldset>
+
+        <fieldset class="picker picker-row">
+          <legend>מצב משחק</legend>
+          <label class="mode-card"><input type="radio" name="mode" value="solo" checked>
+            <b>SOLO</b><span>אתה מחליט. הכל עליך.</span></label>
+          <label class="mode-card"><input type="radio" name="mode" value="hive">
+            <b>ROY&nbsp;2: DAVE</b><span>12 שברי תודעה מצביעים איתך. הרוב קובע.</span></label>
+        </fieldset>
+
+        <fieldset class="picker">
+          <legend>תדירות החלטות</legend>
+          <div class="pace-row" id="pace-row">
+            <label class="pace"><input type="radio" name="pace" value="1"><span>כל פרק</span></label>
+            <label class="pace"><input type="radio" name="pace" value="2" checked><span>2 פרקים</span></label>
+            <label class="pace"><input type="radio" name="pace" value="3"><span>3 פרקים</span></label>
+          </div>
+          <p class="pace-note" id="pace-note"></p>
+        </fieldset>
+
+        <fieldset class="picker">
+          <legend>Seed <span class="hint">(קובע תכונות ואת כל ההגרלות — ניתן לשחזור)</span></legend>
+          <div class="seed-row">
+            <input type="text" id="inp-seed" class="input mono" placeholder="0x…" spellcheck="false">
+            <button class="btn btn-ghost" id="btn-reseed" type="button">אקראי</button>
+          </div>
+        </fieldset>
+
+        <label class="toggle"><input type="checkbox" id="chk-timer" checked> <span>שעון עצר על החלטות</span></label>
+      </div>
+
+      <div class="mint-preview">
+        <div class="nft-card" id="nft-preview"></div>
+        <div class="mint-cost">
+          <span>דמי כניסה</span><b id="mint-fee">10 $TICKET</b>
+        </div>
+        <button class="btn btn-primary btn-xl" id="btn-mint">MINT &amp; START RUN</button>
+        <p class="mint-note" id="mint-note"></p>
+        <button class="linkish" id="btn-mint-back">חזרה</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ RUN ═══════════ -->
+  <section class="screen screen-run" id="screen-run">
+    <div class="run-grid">
+
+      <aside class="panel panel-char">
+        <div class="nft-card nft-live" id="nft-live"></div>
+        <div class="stats" id="stats"></div>
+        <div class="inv">
+          <h4>מלאי</h4>
+          <ul id="inv-list" class="inv-list"><li class="empty">ריק</li></ul>
+        </div>
+      </aside>
+
+      <section class="panel panel-stage">
+        <div class="stage-head">
+          <span class="stage-age">גיל <b id="age">0</b></span>
+          <span class="stage-chapter" id="chapter">פרק 1</span>
+          <span class="stage-mult" id="mult">×1.00</span>
+        </div>
+        <div class="timer-wrap" id="timer-wrap"><div class="timer-bar" id="timer-bar"></div></div>
+
+        <div class="digest" id="digest" hidden></div>
+
+        <article class="event" id="event">
+          <h3 class="event-title" id="event-title"></h3>
+          <p class="event-text" id="event-text"></p>
+          <div class="choices" id="choices"></div>
+          <div class="outcome" id="outcome" hidden></div>
+          <div class="hive" id="hive" hidden></div>
+        </article>
+
+        <div class="stage-foot">
+          <button class="btn btn-primary" id="btn-next" hidden>המשך</button>
+        </div>
+      </section>
+
+      <aside class="panel panel-chain">
+        <h4 class="panel-h">ON-CHAIN LOG</h4>
+        <ol class="txs" id="txs"></ol>
+        <h4 class="panel-h">יומן חיים</h4>
+        <ol class="life-log" id="life-log"></ol>
+      </aside>
+
+    </div>
+  </section>
+
+  <!-- ═══════════ END ═══════════ -->
+  <section class="screen screen-end" id="screen-end">
+    <div class="end-wrap">
+      <p class="kicker" id="end-kicker">RUN FINALIZED</p>
+      <h2 class="end-title" id="end-title"></h2>
+      <p class="end-text" id="end-text"></p>
+      <div class="score-board" id="score-board"></div>
+      <div class="unlocks" id="unlocks" hidden></div>
+      <div class="end-actions">
+        <button class="btn btn-primary btn-xl" id="btn-again">ריצה חדשה</button>
+        <button class="btn btn-ghost" id="btn-end-collection">🏆 האוסף שלי</button>
+        <button class="btn btn-ghost" id="btn-end-legacy">לוח תוצאות</button>
+        <button class="btn btn-ghost" id="btn-copy">העתק תוצאה</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ LEGACY ═══════════ -->
+  <section class="screen screen-legacy" id="screen-legacy">
+    <h2 class="screen-title">LEADERBOARD · SEASON 1</h2>
+    <div class="legacy-grid">
+      <div class="panel">
+        <h4 class="panel-h">Life Well Lived — טופ 10</h4>
+        <ol class="board" id="board"></ol>
+      </div>
+      <div class="panel">
+        <h4 class="panel-h">בית הקברות — Soulbound Tokens</h4>
+        <div class="graves" id="graves"></div>
+      </div>
+    </div>
+    <div class="legacy-foot">
+      <button class="btn btn-primary" id="btn-legacy-back">חזרה למסך הפתיחה</button>
+      <button class="btn btn-ghost" id="btn-wipe">אפס נתונים מקומיים</button>
+    </div>
+  </section>
+
+  <!-- ═══════════ COLLECTION ═══════════ -->
+  <section class="screen screen-collection" id="screen-collection">
+    <h2 class="screen-title">🏆 האוסף שלי <span id="coll-progress" class="coll-progress"></span></h2>
+    <div class="coll-grid" id="coll-grid"></div>
+    <div class="legacy-foot">
+      <button class="btn btn-primary" id="btn-coll-back">חזרה</button>
+      <button class="btn btn-ghost" id="btn-coll-legacy">לוח תוצאות</button>
+    </div>
+  </section>
+
+  <!-- ═══════════ ABOUT ═══════════ -->
+  <section class="screen screen-about" id="screen-about">
+    <h2 class="screen-title">איך זה עובד</h2>
+    <div class="about-body panel">
+      <h3>Core Loop</h3>
+      <ol>
+        <li><b>Mint</b> — משלמים 10 $TICKET, נוצרת זהות (Roy ID) עם תכונות שנגזרות מה־seed.</li>
+        <li><b>Decide</b> — כל פרק מציג אירוע ובחירות, תחת שעון עצר. אי־החלטה נענשת.</li>
+        <li><b>Balance</b> — בריאות, שפיות, קריירה והון. אחד מהם מתאפס — הריצה נגמרת.</li>
+        <li><b>Finalize</b> — הציון נצרב כ־Soulbound Token, נכנס ל־Leaderboard, ומעביר תכונה אחת לדור הבא.</li>
+      </ol>
+      <h3>Provably fair</h3>
+      <p>כל ההגרלות נגזרות מ־<code>keccak-lite(seed ‖ chapter ‖ salt)</code> באמצעות PRNG דטרמיניסטי (sfc32).
+      אותו seed = בדיוק אותה ריצה. ה־roll המדויק מוצג בלוג ה־on-chain כדי שתוכל לאמת.</p>
+      <h3>מה מדומה כרגע</h3>
+      <p>שכבת הבלוקצ'יין רצה מול <code>MockChainAdapter</code> — ארנק, טרנזקציות, $TICKET ומאגר הפרסים נשמרים ב־localStorage.
+      הממשק (<code>src/chain.js</code>) זהה לזה שיחובר ל־Base/Arbitrum, וחוזה הייחוס נמצא ב־<code>contracts/RoyRun.sol</code>.</p>
+      <h3>קרדיטים</h3>
+      <p>בהשראת "Roy: A Life Well Lived" מתוך <i>Rick and Morty</i> (עונה 2, פרק 2 — "Mortynight Run"), ובהשראת מבנה הריצה של Legionnaire.
+      פרויקט לא־מסחרי, לצורכי הדגמה.</p>
+      <button class="btn btn-primary" id="btn-about-back">חזרה</button>
+    </div>
+  </section>
+
+</main>
+
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
