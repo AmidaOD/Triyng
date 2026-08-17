@@ -202,11 +202,18 @@ export const EVENTS = [
   },
   {
     id: 'ya_love', stage: [22, 30], years: 3, weight: 5,
+    echo: [{ flag: 'guarded', note: 'הדלת שנטרקה כשהיית בן ארבע' },
+           { flag: 'warm_start', note: 'איך שאבא הרים אותך מעל הקהל' }],
     title: 'היא שואלת לאן זה הולך',
     text: 'שנתיים ביחד. השאלה נשאלת בשקט, בין שתי כוסות קפה.',
+    textIf: [
+      { flag: 'guarded', text: 'שנתיים ביחד. היא שואלת בשקט, ואתה מרגיש את אותו דבר שהרגשת בגיל ארבע כשהרכב יצא בלילה — שכדאי להיות מוכן.' },
+      { flag: 'warm_start', text: 'שנתיים ביחד. השאלה נשאלת בשקט, ואתה נזכר איך אבא הרים אותך מעל הקהל — שזה בדיוק מה שאתה רוצה לתת למישהו.' },
+    ],
     choices: [
       { label: 'להציע נישואין', tag: 'safe', outcomes: [
-        { p: .8, text: 'חתונה קטנה בחצר של ההורים שלה. זה יחזיק. לא בלי סדקים, אבל יחזיק.', eff: { sanity: 18, health: 5, capital: -12000, career: 4 }, flags: ['married'], milestone: 'נישואין', score: 90 },
+        { p: .8, pIf: { warm_start: 1.4, grief_ok: 1.2, guarded: .6 },
+          text: 'חתונה קטנה בחצר של ההורים שלה. זה יחזיק. לא בלי סדקים, אבל יחזיק.', eff: { sanity: 18, health: 5, capital: -12000, career: 4 }, flags: ['married'], milestone: 'נישואין', score: 90 },
         { p: .2, text: 'היא אמרה שהיא צריכה זמן. הזמן הפך לשנה, ואז לכתובת אחרת.', eff: { sanity: -16, career: 3 }, score: 20 },
       ]},
       { label: '"אני עוד לא יודע"', tag: 'risk', outcomes: [
@@ -289,11 +296,17 @@ export const EVENTS = [
   },
   {
     id: 'ad_promotion', stage: [29, 46], years: 3, weight: 4,
+    echo: [{ flag: 'degree', note: 'התואר ששילמת עליו' },
+           { flag: 'hustler', note: 'דוכן הלימונדה מגיל שבע' }],
     title: 'קידום לניהול אזורי',
     text: 'משכורת כפולה, ארבעה לילות בשבוע מחוץ לבית.',
+    textIf: [
+      { flag: 'kids', text: 'משכורת כפולה, ארבעה לילות בשבוע מחוץ לבית. הבת שלך בת שש.' },
+    ],
     choices: [
       { label: 'לקחת', tag: 'risk', outcomes: [
-        { p: .6, text: 'שלוש שנים של שיא. גם הבנק וגם המסך של הטלפון מלאים.', eff: { career: 20, capital: 90000, sanity: -10, health: -6 }, milestone: 'מנהל אזורי', score: 95 },
+        { p: .6, pIf: { degree: 1.5, hustler: 1.3, record: .6, addiction: .5 },
+          text: 'שלוש שנים של שיא. גם הבנק וגם המסך של הטלפון מלאים.', eff: { career: 20, capital: 90000, sanity: -10, health: -6 }, milestone: 'מנהל אזורי', score: 95 },
         { p: .4, text: 'עמדת ביעדים ואיבדת ארבע שנים מהילדות של הבת שלך.', eff: { career: 22, capital: 110000, sanity: -22, health: -10 }, flags: ['absent_parent'], score: 60 },
       ]},
       { label: 'לסרב ולהישאר קרוב לבית', tag: 'safe', outcomes: [
@@ -390,11 +403,13 @@ export const EVENTS = [
   },
   {
     id: 'mid_health_scare', stage: [45, 62], years: 3, weight: 4,
+    excludes: ['survivor'],
+    echo: { flag: 'bad_knee', note: 'הברך שמעולם לא חזרה לגמרי' },
     title: 'הבדיקה השנתית',
     text: 'הרופא מסתכל על המסך קצת יותר מדי זמן. "יש כמה מספרים שאני לא אוהב."',
     choices: [
       { label: 'לשנות הכל — תזונה, ריצה, בלי אלכוהול', tag: 'safe', outcomes: [
-        { p: .75, text: 'תוך שנה ירדת שנים במקום קילוגרמים. אתה רץ עשרה קילומטר בגיל חמישים ושתיים.', eff: { health: 20, sanity: 8, career: -3 }, flags: ['fit'], milestone: 'התאוששות', score: 80 },
+        { p: .75, pIf: { bad_knee: .55, football: 1.3, survivor: 1.25, addiction: .5 }, text: 'תוך שנה ירדת שנים במקום קילוגרמים. אתה רץ עשרה קילומטר בגיל חמישים ושתיים.', eff: { health: 20, sanity: 8, career: -3 }, flags: ['fit'], milestone: 'התאוששות', score: 80 },
         { p: .25, text: 'החזקת ארבעה חודשים. אחר כך החיים חזרו.', eff: { health: 5, sanity: -4 }, score: 30 },
       ]},
       { label: 'להתעלם. יש דברים דחופים יותר', tag: 'degen', outcomes: [
@@ -407,11 +422,12 @@ export const EVENTS = [
   /* ══════════════ 58+ ══════════════ */
   {
     id: 'old_retire', stage: [58, 70], years: 4, weight: 5,
+    echo: [{ flag: 'owner', note: 'העסק שבנית' }, { flag: 'loner', note: 'האנשים שלא נשארו' }],
     title: 'הפרישה',
     text: 'החשבון מספיק. השאלה היא אם אתה מספיק.',
     choices: [
       { label: 'לפרוש. לגמרי', tag: 'safe', outcomes: [
-        { p: .7, text: 'גינה, נכדים, ובוקר שלא צריך שעון מעורר. לקח שנה להאמין שזה מותר.', eff: { sanity: 18, health: 6, career: -10 }, flags: ['retired'], milestone: 'פרישה', score: 90 },
+        { p: .7, pIf: { kids: 1.35, house: 1.2, old_friends: 1.2, repaired: 1.2, loner: .6, estranged: .6 }, text: 'גינה, נכדים, ובוקר שלא צריך שעון מעורר. לקח שנה להאמין שזה מותר.', eff: { sanity: 18, health: 6, career: -10 }, flags: ['retired'], milestone: 'פרישה', score: 90 },
         { p: .3, text: 'בלי העבודה לא נשאר מספיק. הימים התארכו.', eff: { sanity: -14, health: -6, career: -10 }, flags: ['retired'], score: 35 },
       ]},
       { label: 'להמשיך לעבוד', tag: 'risk', outcomes: [
@@ -422,8 +438,13 @@ export const EVENTS = [
   },
   {
     id: 'old_grandkid', stage: [60, 78], years: 4, weight: 4, requires: ['kids'],
+    echo: [{ flag: 'repaired', note: 'הפיוס' }, { flag: 'absent_parent', note: 'ארבע השנים שהחמצת' }],
     title: 'הנכד הראשון',
     text: 'הוא נראה בדיוק כמוך בתמונות מגיל שנתיים. זה מפחיד ומנחם באותה מידה.',
+    textIf: [
+      { flag: 'absent_parent', text: 'הוא נראה בדיוק כמוך בתמונות מגיל שנתיים. אתה מסתכל עליו וחושב שקיבלת הזדמנות שנייה בדיוק לאותו מבחן.' },
+      { flag: 'estranged', text: 'שמעת על הלידה מאחותך. אף אחד לא התקשר אליך.' },
+    ],
     choices: [
       { label: 'להיות סבא נוכח', tag: 'safe', outcomes: [
         { p: 1, text: 'לימדת אותו לרכוב, לדוג ולשקר בפוקר. הוא יזכור אותך ארבעים שנה.', eff: { sanity: 22, health: 4 }, milestone: 'סבא', score: 110 },
@@ -448,7 +469,8 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'old_memoir', stage: [64, 85], years: 4, weight: 3,
+    id: 'old_memoir', stage: [64, 85], years: 4, weight: 3, requires: ['kids'],
+    echo: [{ flag: 'off_grid', note: 'השנים שאין להן תיעוד' }, { flag: 'smuggler', note: 'המשלוחים' }],
     title: 'המחברת',
     text: 'הבת שלך הביאה מחברת ריקה. "תכתוב," היא אמרה. "אני לא יודעת שום דבר עליך לפני גיל שלושים."',
     choices: [
@@ -524,14 +546,215 @@ export const EVENTS = [
     ],
   },
 
+  /* ══════════════ אירועי המשך — נפתחים רק בגלל בחירות קודמות ══════════════ */
+  {
+    id: 'cb_dog', stage: [13, 20], years: 2, weight: 6, requires: ['dog'],
+    echo: { flag: 'dog', note: 'הכלב שהתחננת עליו בגיל שמונה' },
+    title: 'באדי כבר לא קם מהשטיח',
+    text: 'תשע שנים מאז שאבא כיבה את המנוע ליד השלט. הווטרינר מדבר בשקט ומסתכל עליך, לא על ההורים.',
+    choices: [
+      { label: 'להיות איתו עד הסוף', tag: 'safe', outcomes: [
+        { p: 1, text: 'החזקת לו את הראש. זאת הייתה הפעם הראשונה שבכית מול אנשים, וזה לא הרג אותך.', eff: { sanity: -6, health: 2 }, flags: ['grief_ok'], score: 45 },
+      ]},
+      { label: 'לחכות בחוץ', tag: 'risk', outcomes: [
+        { p: 1, text: 'שמעת את הדלת נסגרת ולא נכנסת. אתה עוד תחשוב על זה בגיל חמישים.', eff: { sanity: -12, career: 3 }, flags: ['guilt'], score: 15 },
+      ]},
+    ],
+  },
+  {
+    id: 'cb_knee', stage: [30, 52], years: 3, weight: 5, requires: ['bad_knee'],
+    echo: { flag: 'bad_knee', note: 'הברך שנקרעה בטרייאאוטים' },
+    title: 'הברך חוזרת לגבות',
+    text: 'האורתופד מסתכל על הצילום ואומר: "מי שתפר לך את זה בגיל שש עשרה עשה עבודה סבירה. עכשיו זה נגמר."',
+    choices: [
+      { label: 'ניתוח החלפה מלא', tag: 'safe', outcomes: [
+        { p: .75, text: 'שישה חודשי שיקום, ואז הלכת בלי לצלוע בפעם הראשונה מזה עשרים שנה.', eff: { health: 14, capital: -34000, sanity: 8 }, score: 60 },
+        { p: .25, text: 'זיהום אחרי הניתוח. שבועיים באשפוז והברך גרועה מבעבר.', eff: { health: -18, capital: -46000, sanity: -8 }, score: 15 },
+      ]},
+      { label: 'לחיות עם זה. משככי כאבים', tag: 'degen', outcomes: [
+        { p: .4, text: 'הסתדרת. אתה קם לאט בבקרים ומקלל את המאמן ההוא בשקט.', eff: { health: -6, sanity: -4, mult: .12 }, score: 35 },
+        { p: .6, text: 'המרשמים הפכו להרגל. לקח שנתיים להבין, ועוד שנה לצאת.', eff: { health: -16, sanity: -18, career: -10, mult: .1 }, item: 'meds', flags: ['addiction'], score: 20 },
+      ]},
+    ],
+  },
+  {
+    id: 'cb_reunion', stage: [33, 50], years: 2, weight: 4, requires: ['football'],
+    echo: { flag: 'football', note: 'העונה שבה היית כוכב הנבחרת' },
+    title: 'מפגש מחזור',
+    text: 'המאמן הזקן מספר לכולם על הריצה שלך בגמר. חצי מהחדר זוכר אותך בתור מישהו אחר לגמרי ממי שאתה עכשיו.',
+    textIf: [
+      { flag: 'owner', text: 'המאמן הזקן מספר לכולם על הריצה שלך בגמר, ואז מישהו אומר "הוא בעל החנות עכשיו" — ואתה שומע איך זה נשמע מבחוץ.' },
+      { flag: 'off_grid', text: 'הם מזהים אותך בקושי. אין לך פייסבוק, אין לך כתובת, ואף אחד לא הצליח להזמין אותך — הגעת כי במקרה עברת בעיר.' },
+    ],
+    choices: [
+      { label: 'להישאר עד הסוף ולשתות איתם', tag: 'safe', outcomes: [
+        { p: 1, text: 'ארבע שעות של צחוק. שלושה מהם התקשרו אחר כך, ואחד מהם הפך שוב לחבר.', eff: { sanity: 14, career: 4 }, flags: ['old_friends'], score: 55 },
+      ]},
+      { label: 'ללכת אחרי חצי שעה', tag: 'risk', outcomes: [
+        { p: 1, text: 'יצאת לחניון ונשמת. עדיף לזכור את גיל שבע עשרה כמו שהוא היה.', eff: { sanity: -4, career: 6, mult: .08 }, score: 30 },
+      ]},
+    ],
+  },
+  {
+    id: 'cb_record', stage: [24, 44], years: 2, weight: 5, requires: ['record'],
+    echo: { flag: 'record', note: 'הרישום הפלילי שנפתח לך בעבר' },
+    title: 'בדיקת רקע',
+    text: 'המשרה כמעט סגורה. ואז מגיע מייל מהמחלקה המשפטית: "יש כאן משהו שצריך הסבר."',
+    choices: [
+      { label: 'לספר הכל, בכנות', tag: 'safe', outcomes: [
+        { p: .7, text: '"תודה שאמרת." קיבלת את המשרה, והמנהל סמך עליך יותר בגלל זה.', eff: { career: 14, capital: 20000, sanity: 6 }, score: 65 },
+        { p: .3, text: 'הם הודו לך והמשיכו למועמד הבא.', eff: { career: -6, sanity: -10 }, score: 15 },
+      ]},
+      { label: 'לשלם לעורך דין למחיקת התיק', tag: 'risk', outcomes: [
+        { p: .6, text: 'התיק נמחק. עשרים שנה של תווית ירדו בבת אחת.', eff: { capital: -22000, sanity: 12, career: 8 }, flags: ['clean_record'], score: 60 },
+        { p: .4, text: 'עורך הדין לקח את הכסף והתיק נשאר בדיוק במקום.', eff: { capital: -22000, sanity: -10 }, score: 10 },
+      ]},
+    ],
+  },
+  {
+    id: 'cb_shop', stage: [46, 68], years: 3, weight: 5, requires: ['owner'],
+    echo: { flag: 'owner', note: 'החנות שקנית מהבעלים הקודם' },
+    title: 'מישהו רוצה לקנות את החנות',
+    text: 'רשת גדולה שמה על השולחן פי שלושה ממה ששילמת. השלט עם השם שלך ירד למחרת.',
+    choices: [
+      { label: 'למכור', tag: 'safe', outcomes: [
+        { p: 1, text: 'חתמת, ואז ישבת ברכב בחניון עשרים דקות. הכסף אמיתי, וגם החור.', eff: { capital: 420000, sanity: -8, career: -12 }, flags: ['sold_shop'], milestone: 'האקזיט', score: 95 },
+      ]},
+      { label: 'לסרב ולהעביר לילדים', tag: 'risk', needs: { flag: 'kids' }, outcomes: [
+        { p: .55, text: 'הבת שלך ניהלה את זה טוב ממך. שלוש שנים אחר כך יש שתי סניפים.', eff: { capital: 90000, sanity: 22, career: 6 }, milestone: 'עסק משפחתי', score: 130 },
+        { p: .45, text: 'היא לא רצתה את זה מעולם, ולקח לכם שנתיים לומר את זה בקול.', eff: { capital: -30000, sanity: -16 }, score: 30 },
+      ]},
+      { label: 'לסרב. זאת החנות שלי', tag: 'degen', outcomes: [
+        { p: .5, text: 'הרשת פתחה מולך וסגרה אחרי שנתיים. ניצחת, וזה עלה לך בשיער.', eff: { capital: -40000, sanity: 16, health: -8, mult: .2 }, milestone: 'לא נמכר', score: 100 },
+        { p: .5, text: 'הרשת פתחה מולך ואתה סגרת אחרי שלוש שנים. בלי כסף ובלי שלט.', eff: { capital: -120000, sanity: -20, career: -18, mult: .12 }, score: 25 },
+      ]},
+    ],
+  },
+  {
+    id: 'cb_survivor', stage: [42, 72], years: 3, weight: 5, requires: ['survivor'],
+    echo: { flag: 'survivor', note: 'האבחנה ששרדת בגיל שלושים' },
+    title: 'הסריקה השנתית',
+    text: 'עשר שנים של אותו חדר המתנה, אותו ריח. אתה יודע לזהות לפי הפנים של האחות אם זה בסדר.',
+    choices: [
+      { label: 'להמשיך לעקוב, כל שנה, בלי לפספס', tag: 'safe', outcomes: [
+        { p: .85, text: 'נקי. וכל שנה שעוברת אתה חי אותה קצת פחות בפחד.', eff: { health: 8, sanity: 10, capital: -6000 }, score: 70 },
+        { p: .15, text: 'תפסו משהו קטן מוקדם. הוציאו, וזה נגמר שם.', eff: { health: -8, sanity: -6, capital: -30000 }, score: 55 },
+      ]},
+      { label: 'להפסיק לבוא. נמאס להיות חולה', tag: 'degen', outcomes: [
+        { p: .45, text: 'חיית שנים בלי לחשוב על זה בכלל. זה היה שווה משהו.', eff: { sanity: 16, mult: .2 }, score: 60 },
+        { p: .55, text: 'כשזה חזר, זה כבר לא היה שלב שניתן לתפוס מוקדם.', eff: { health: -35, sanity: -14, mult: .15 }, flags: ['sick'], score: 25 },
+      ]},
+    ],
+  },
+  {
+    id: 'cb_absent', stage: [48, 70], years: 3, weight: 5, requires: ['absent_parent'],
+    echo: { flag: 'absent_parent', note: 'ארבע השנים שבהן היית בדרכים' },
+    title: 'היא אומרת את זה סוף סוף',
+    text: '"לא היית שם." לא בצעקות. בשקט, בין שתי מנות, אחרי עשרים שנה שהיא לא אמרה את זה.',
+    choices: [
+      { label: 'להקשיב עד הסוף בלי להתגונן', tag: 'safe', outcomes: [
+        { p: .8, text: 'שתקת ארבעים דקות ואמרת "את צודקת". זה לא תיקן הכל, אבל זה פתח משהו.', eff: { sanity: 20 }, flags: ['repaired'], milestone: 'הפיוס', score: 110 },
+        { p: .2, text: 'היא הייתה צריכה לומר את זה, לא לשמוע תשובה. אתם עדיין מדברים פעם בחודש.', eff: { sanity: -6 }, score: 35 },
+      ]},
+      { label: '"עבדתי בשבילכם"', tag: 'risk', outcomes: [
+        { p: 1, text: 'המשפט הזה סגר את הדלת. היא שילמה על הארוחה ולא ענתה לטלפון חודשיים.', eff: { sanity: -22, career: 4 }, flags: ['estranged'], score: 15 },
+      ]},
+    ],
+  },
+  {
+    id: 'cb_offgrid_price', stage: [45, 75], years: 3, weight: 5, requires: ['off_grid'],
+    echo: { flag: 'off_grid', note: 'היום שבו יצאת מהרשת' },
+    title: 'אין לך תיק רפואי',
+    text: 'כאב בחזה בשלוש לפנות בוקר. בית החולים הקרוב במרחק שעה, ובמערכת שלהם אתה לא קיים.',
+    choices: [
+      { label: 'לנסוע ולהמציא שם', tag: 'risk', outcomes: [
+        { p: .6, text: 'טיפלו בך. שילמת מזומן ויצאת לפני שמישהו שאל יותר מדי.', eff: { health: -8, capital: -18000, sanity: -6, mult: .12 }, score: 55 },
+        { p: .4, text: 'בלי היסטוריה רפואית הם ניחשו. ניחוש אחד היה שגוי.', eff: { health: -26, capital: -22000, sanity: -10, mult: .1 }, score: 25 },
+      ]},
+      { label: 'לחכות עד הבוקר בבונקר', tag: 'degen', needs: { item: 'bunker' }, outcomes: [
+        { p: .5, text: 'עבר. אולי זה היה שריר. אתה לא תדע לעולם.', eff: { health: -10, sanity: 6, mult: .25 }, score: 70 },
+        { p: .5, text: 'זה היה התקף. שרדת אותו לבד, ומאז הלב לא אותו הלב.', eff: { health: -32, sanity: -8, mult: .2 }, flags: ['heart'], score: 45 },
+      ]},
+    ],
+  },
+  {
+    id: 'cb_guilt', stage: [40, 72], years: 3, weight: 4, requires: ['guilt'],
+    echo: { flag: 'guilt', note: 'הלילה שלא ענית' },
+    title: 'המכתב במגירה',
+    text: 'מצאת אותו במקרה, בקופסה של אמא. הוא כתב לך שבוע לפני, ואתה מעולם לא פתחת.',
+    choices: [
+      { label: 'לקרוא', tag: 'risk', outcomes: [
+        { p: .65, text: 'הוא לא האשים אותך בכלום. זה היה גרוע יותר, ואז הרבה יותר טוב.', eff: { sanity: 18 }, flags: ['closure'], milestone: 'סגירת מעגל', score: 90 },
+        { p: .35, text: 'הוא כן האשים. וצדק. שרפת את זה בגינה ולא סיפרת לאף אחד.', eff: { sanity: -14, mult: .1 }, score: 30 },
+      ]},
+      { label: 'להחזיר לקופסה', tag: 'safe', outcomes: [
+        { p: 1, text: 'יש דברים שאתה לא צריך לדעת. אתה חוזר לחשוב על הקופסה כל שנה בערך.', eff: { sanity: -6 }, score: 25 },
+      ]},
+    ],
+  },
+  {
+    id: 'cb_whale', stage: [35, 65], years: 3, weight: 5, requires: ['whale'],
+    echo: { flag: 'whale', note: 'הטרייד שעשה אותך עשיר' },
+    title: 'כולם יודעים',
+    text: 'בן דוד שלא דיברת איתו עשור מתקשר. אחר כך עוד אחד. לכולם יש רעיון, ולכולם יש מספר.',
+    choices: [
+      { label: 'לתת לכולם. זה רק כסף', tag: 'safe', outcomes: [
+        { p: .5, text: 'שני עסקים הצליחו, ארבעה לא, ומשפחה שלמה חייבת לך את הבית. אתה ישן טוב.', eff: { capital: -260000, sanity: 18 }, flags: ['patron'], milestone: 'הנדבן', score: 100 },
+        { p: .5, text: 'הכסף נגמר והטלפונים לא. עכשיו אתה גם קמצן בעיניהם.', eff: { capital: -340000, sanity: -16 }, score: 30 },
+      ]},
+      { label: 'לסגור את הברז ולנתק', tag: 'degen', outcomes: [
+        { p: 1, text: 'שמרת על ההון. בחגים יושבים סביב השולחן שמונה אנשים במקום עשרים ושניים.', eff: { sanity: -14, capital: 40000, mult: .2 }, flags: ['loner'], score: 55 },
+      ]},
+      { label: 'קרן משפחתית עם כללים ברורים', tag: 'risk', outcomes: [
+        { p: .7, text: 'ועדה, טפסים, ריבית אפס. זה הציל גם את הכסף וגם את החתונות.', eff: { capital: -120000, sanity: 14, career: 8 }, milestone: 'הקרן', score: 95 },
+        { p: .3, text: 'הכללים החזיקו שנתיים, ואז הפכו למלחמה עם עורכי דין.', eff: { capital: -180000, sanity: -18 }, score: 25 },
+      ]},
+    ],
+  },
+  {
+    id: 'cb_broke', stage: [30, 66], years: 3, weight: 5, requires: ['broke'],
+    echo: { flag: 'broke', note: 'ההימור שמחק לך הכל' },
+    title: 'הצעה לחזור לשולחן',
+    text: 'אותו חבר, אותו לינק, אותה זווית בגרף. הפעם הוא אומר "אני יודע שנשרפת, אבל".',
+    choices: [
+      { label: 'לחסום את המספר', tag: 'safe', outcomes: [
+        { p: 1, text: 'לקח לך שבע שנים ללמוד את המשפט הזה. עכשיו הוא עולה לך שנייה.', eff: { sanity: 12, capital: 10000, career: 4 }, flags: ['disciplined'], milestone: 'למדתי', score: 75 },
+      ]},
+      { label: 'סכום קטן. רק כדי להחזיר', tag: 'degen', outcomes: [
+        { p: .35, text: 'החזרת את מה שאיבדת ועצרת בדיוק שם. כמעט אף אחד לא עוצר בדיוק שם.', eff: { capital: 90000, sanity: 8, mult: .3 }, milestone: 'ההחזר', score: 110 },
+        { p: .65, text: 'הסכום הקטן גדל תוך חודש. הפעם זה לקח גם את הבית.', eff: { capital: -140000, sanity: -24, health: -8, mult: .2 }, score: 20 },
+      ]},
+    ],
+  },
+  {
+    id: 'cb_divorce_after', stage: [48, 74], years: 3, weight: 4, requires: ['divorced'],
+    echo: { flag: 'divorced', note: 'הגירושין' },
+    title: 'היא מתחתנת שוב',
+    text: 'ההזמנה הגיעה בדואר, עם הכתב שלה. הבת שלכם ביקשה שתבוא.',
+    choices: [
+      { label: 'ללכת, ולהיות בסדר', tag: 'safe', outcomes: [
+        { p: .7, text: 'לחצת יד לחתן ורקדת עם הבת שלך. יצאת מוקדם ובכל זאת ניצחת משהו.', eff: { sanity: 16 }, flags: ['repaired'], score: 80 },
+        { p: .3, text: 'הגעת, וזה היה קשה מכפי שחשבת. הבת שלך ראתה, וזה מה שהיא זוכרת.', eff: { sanity: -10 }, score: 30 },
+      ]},
+      { label: 'לא להגיע', tag: 'risk', outcomes: [
+        { p: 1, text: 'שלחת מתנה בלי פתק. הבת שלך לא אמרה כלום, ואת זה בדיוק שמעת.', eff: { sanity: -14, capital: -4000 }, score: 20 },
+      ]},
+    ],
+  },
+
   /* ══════════════ משברים כפויים ══════════════ */
   {
     id: 'crisis_cancer', crisis: true, stage: [29, 33], years: 3, weight: 0, forced: 'cancer',
+    echo: [{ flag: 'insurance', note: 'הפוליסה שחתמת עליה' }, { flag: 'married', note: 'מי שמחכה לך בבית' }],
     title: 'האבחנה',
+    textIf: [
+      { flag: 'kids', text: 'שלב שני. הרופא מדבר על אחוזים, ואתה לא שומע אף אחד מהם. אתה חושב רק על מי שמחכה לך בבית.' },
+      { flag: 'off_grid', text: 'שלב שני. גילית את זה מאוחר כי אין לך רופא משפחה, אין לך תיק, ואין לך מי שיזכיר לך ללכת.' },
+    ],
     text: 'שלב שני. הרופא מדבר על אחוזים, ואתה לא שומע אף אחד מהם. גיל שלושים.',
     choices: [
       { label: 'טיפול מלא. להילחם בכל מה שיש', tag: 'safe', outcomes: [
-        { p: .84, text: 'ארבעה עשר חודשים של גיהינום. הרמיסיה הגיעה בסתיו. אתה חוזר אחר.', eff: { health: -18, sanity: -10, capital: -120000, career: -8, mult: .2 }, flags: ['survivor'], milestone: 'ניצול', score: 160 },
+        { p: .84, pIf: { fit: 1.15, married: 1.1, dog: 1.05, addiction: .75, loner: .9 }, text: 'ארבעה עשר חודשים של גיהינום. הרמיסיה הגיעה בסתיו. אתה חוזר אחר.', eff: { health: -18, sanity: -10, capital: -120000, career: -8, mult: .2 }, flags: ['survivor'], milestone: 'ניצול', score: 160 },
         { p: .16, text: 'הגוף לא הגיב. שלושה חודשים אחרי הסבב האחרון זה נגמר.', death: 'cancer', eff: { health: -100 }, score: 90 },
       ]},
       { label: 'להפעיל את הפוליסה', tag: 'safe', needs: { item: 'insurance' }, consumes: 'insurance', outcomes: [
@@ -546,6 +769,7 @@ export const EVENTS = [
   },
   {
     id: 'crisis_crash', crisis: true, stage: [40, 44], years: 3, weight: 0, forced: 'crash',
+    echo: [{ flag: 'whale', note: 'הטרייד הגדול שלך' }, { flag: 'broke', note: 'הפעם הקודמת שנשרפת' }],
     title: 'השוק קורס',
     text: 'ארבעים ושתיים אחוז בשבועיים. הטלפון של הבנק לא מפסיק לצלצל, ואף אחד שם לא עונה.',
     choices: [
@@ -553,11 +777,11 @@ export const EVENTS = [
         { p: 1, text: 'עצרת את הדימום. פספסת גם את ההתאוששות, אבל ישנת בלילה.', eff: { capital: -35000, sanity: -6 }, score: 40 },
       ]},
       { label: 'לא לגעת. לחכות', tag: 'risk', outcomes: [
-        { p: .6, text: 'שלוש שנים אחר כך התיק היה גבוה מאי פעם. הידיים היו יציבות.', eff: { capital: 120000, sanity: -14, mult: .15 }, milestone: 'ידיים יציבות', score: 90 },
+        { p: .6, pIf: { disciplined: 1.6, whale: 1.3, broke: .7 }, text: 'שלוש שנים אחר כך התיק היה גבוה מאי פעם. הידיים היו יציבות.', eff: { capital: 120000, sanity: -14, mult: .15 }, milestone: 'ידיים יציבות', score: 90 },
         { p: .4, text: 'ההתאוששות הגיעה מאוחר מדי בשבילך. מכרת בתחתית השנייה.', eff: { capital: -90000, sanity: -20, health: -6 }, score: 20 },
       ]},
       { label: 'למנף פנימה בתחתית', tag: 'degen', outcomes: [
-        { p: .35, text: 'קנית את הקרקעית בדיוק. פי ארבעה בשלוש שנים.', eff: { capital: 400000, sanity: -10, mult: .4 }, flags: ['whale'], milestone: 'הקרקעית', score: 200 },
+        { p: .35, pIf: { whale: 1.5, broke: .6, disciplined: .8 }, text: 'קנית את הקרקעית בדיוק. פי ארבעה בשלוש שנים.', eff: { capital: 400000, sanity: -10, mult: .4 }, flags: ['whale'], milestone: 'הקרקעית', score: 200 },
         { p: .65, text: 'זאת לא הייתה הקרקעית. מרג׳ין קול חיסל את כל מה שבנית בעשרים שנה.', eff: { capital: -260000, sanity: -30, health: -10, mult: .2 }, flags: ['broke'], score: 40 },
       ]},
     ],

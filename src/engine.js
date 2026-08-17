@@ -74,23 +74,85 @@ export function nextEvent(run, depth = 0) {
   return nextEvent(run, depth + 1);
 }
 
-/** Choices annotated with availability, for rendering. */
+/* ───────────────────────── consequences ───────────────────────── */
+
+/**
+ * Event prose can have variants that only apply once a past choice is on record,
+ * so a chapter reads differently depending on the life that led to it.
+ */
+export function eventText(run, event) {
+  for (const v of event.textIf ?? []) {
+    if (run.flags.has(v.flag)) return v.text;
+  }
+  return event.text;
+}
+
+/** The "this is happening because of what you did" line, when one applies. */
+export function eventEcho(run, event) {
+  for (const e of [].concat(event.echo ?? [])) {
+    if (run.flags.has(e.flag)) return e.note;
+  }
+  return null;
+}
+
+/**
+ * Outcome weights after past choices have had their say. `pIf` multiplies an
+ * outcome's weight when a flag is set — a wrecked knee makes the athletic
+ * branch less likely for the rest of the run.
+ */
+function rawOdds(run, choice) {
+  return choice.outcomes.map((o) => {
+    let p = o.p ?? 1;
+    for (const [flag, mult] of Object.entries(o.pIf ?? {})) {
+      if (run.flags.has(flag)) p *= mult;
+    }
+    return Math.max(0.0001, p);
+  });
+}
+
+/**
+ * The odds the player actually faces, luck included, so the numbers on screen
+ * are the numbers being rolled. Luck warps the roll as `r = u^k`, and
+ * `P(r ≤ c) = c^(1/k)`, so the cumulative boundaries transform exactly.
+ */
+export function displayOdds(run, choice) {
+  const raw = rawOdds(run, choice);
+  const total = raw.reduce((a, b) => a + b, 0);
+  const k = 1 + (run.traits.luck - 5) * 0.09;
+
+  const out = [];
+  let cum = 0, prevWarped = 0;
+  for (const w of raw) {
+    cum += w / total;
+    const warped = Math.pow(Math.min(1, cum), 1 / k);
+    out.push(warped - prevWarped);
+    prevWarped = warped;
+  }
+  return out;
+}
+
+/** Choices annotated with availability and odds, for rendering. */
 export function annotate(run, event) {
-  return event.choices.map((c, i) => ({ ...c, index: i, blocked: checkNeeds(run, c.needs) }));
+  return event.choices.map((c, i) => ({
+    ...c,
+    index: i,
+    blocked: checkNeeds(run, c.needs),
+    odds: displayOdds(run, c),
+  }));
 }
 
 /* ───────────────────────── resolution ───────────────────────── */
 
 function pickOutcome(run, choice, salt) {
   const rng = streamFor(run, salt);
-  const luck = run.traits.luck;
-  // Outcomes are ordered best → worst; luck bends the roll toward the front.
-  const r = Math.pow(rng.next(), 1 + (luck - 5) * 0.09);
-  const total = choice.outcomes.reduce((s, o) => s + (o.p ?? 1), 0);
+  // displayOdds already folds in luck and the flag modifiers, so the roll and
+  // the percentages the player was shown cannot drift apart.
+  const odds = displayOdds(run, choice);
+  const r = rng.next();
   let acc = 0;
-  for (const o of choice.outcomes) {
-    acc += (o.p ?? 1) / total;
-    if (r <= acc) return o;
+  for (let i = 0; i < choice.outcomes.length; i++) {
+    acc += odds[i];
+    if (r <= acc) return choice.outcomes[i];
   }
   return choice.outcomes[choice.outcomes.length - 1];
 }
@@ -112,14 +174,18 @@ export function resolveChoice(run, event, choiceIndex, { auto = false } = {}) {
   const gained = Math.round((outcome.score ?? 0) * (run.path === 'rick' ? 1.1 : 1));
   run.rawScore += gained;
 
-  run.usedEvents.add(event.id);
-  run.lifeLog.push({ age: run.age, title: event.title, choice: choice.label, text: outcome.text, auto });
-  run.rolls.push({ chapter: run.chapter, receipt: rollReceipt(run, `outcome:${choice.label}`) });
-
+  const index = choice.outcomes.indexOf(outcome);
   const quality = outcome.death ? 'bad'
-    : (outcome.p ?? 1) >= 1 ? 'good'
-    : choice.outcomes.indexOf(outcome) === 0 ? 'good'
-    : choice.outcomes.indexOf(outcome) === choice.outcomes.length - 1 ? 'bad' : 'mixed';
+    : choice.outcomes.length === 1 ? 'good'
+    : index === 0 ? 'good'
+    : index === choice.outcomes.length - 1 ? 'bad' : 'mixed';
+
+  run.usedEvents.add(event.id);
+  run.lifeLog.push({
+    age: run.age, title: event.title, choice: choice.label,
+    text: outcome.text, tag: choice.tag, quality, deltas, gained, auto,
+  });
+  run.rolls.push({ chapter: run.chapter, receipt: rollReceipt(run, `outcome:${choice.label}`) });
 
   if (outcome.death) endRun(run, outcome.death);
 

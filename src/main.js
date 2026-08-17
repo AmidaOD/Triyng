@@ -1,99 +1,123 @@
 /**
- * Controller. Wires the DOM to the engine and drives one chapter at a time.
+ * Controller. Drives one chapter at a time and keeps the decision sheet,
+ * the gauges and the history table in sync.
  */
 
 import { chain } from './chain.js';
 import { createRun } from './state.js';
-import { nextEvent, annotate, resolveChoice, autoPick, advance, checkExhausted, rollReceipt } from './engine.js';
+import {
+  nextEvent, annotate, resolveChoice, autoPick, advance, checkExhausted,
+  rollReceipt, eventText, eventEcho,
+} from './engine.js';
 import { scoreRun, grade } from './scoring.js';
-import { evaluate } from './collection.js';
+import { evaluate, progress } from './collection.js';
 import { makeRng, randomSeed } from './rng.js';
 import * as ui from './ui.js';
 
 const { $, $$ } = ui;
 
 const PACE_NOTE = {
-  1: 'שליטה מלאה. כל צומת עובר דרכך — <b>ריצה ארוכה</b>.',
-  2: 'פרק אחד נפתר על ידי הגורל בין החלטה להחלטה — <b>חוויה מאוזנת</b>.',
-  3: 'שני פרקים אוטומטיים בין החלטה להחלטה — <b>ריצה מהירה, פחות שליטה</b>.',
+  1: 'כל צומת עובר דרכך. <b>ריצה ארוכה, שליטה מלאה.</b>',
+  2: 'פרק אחד נפתר בלעדיך בין החלטה להחלטה. <b>חוויה מאוזנת.</b>',
+  3: 'שני פרקים נפתרים בלעדיך. <b>ריצה מהירה, פחות שליטה.</b>',
 };
+const MODE_NOTE = {
+  solo: 'אתה מחליט, אתה חי עם זה.',
+  hive: '12 שברי תודעה מצביעים איתך. הקול שלך שווה 5 — הרוב קובע.',
+};
+const TRAIT_HE = { resilience: 'חוסן', charisma: 'כריזמה', luck: 'מזל', madness: 'טירוף' };
 
 const el = {};
 let run = null;
 let currentEvent = null;
+let pendingDigest = [];
 let timer = null;
 let busy = false;
 
 /* ───────────────────────── boot ───────────────────────── */
 
-function cacheDom() {
-  const ids = [
-    'btn-wallet', 'btn-boot', 'btn-goto-legacy', 'btn-goto-about', 'btn-goto-collection',
-    'inp-seed', 'btn-reseed', 'btn-mint', 'btn-mint-back', 'nft-preview', 'mint-note', 'mint-fee',
-    'chk-timer', 'pace-note',
-    'nft-live', 'stats', 'inv-list', 'txs', 'life-log', 'digest',
-    'age', 'chapter', 'mult', 'timer-wrap', 'timer-bar',
-    'event', 'event-title', 'event-text', 'choices', 'outcome', 'hive', 'btn-next',
-    'end-kicker', 'end-title', 'end-text', 'score-board', 'unlocks',
-    'btn-again', 'btn-end-legacy', 'btn-end-collection', 'btn-copy',
-    'board', 'graves', 'btn-legacy-back', 'btn-wipe',
-    'coll-grid', 'coll-progress', 'btn-coll-back', 'btn-coll-legacy',
-    'btn-about-back',
-  ];
-  ids.forEach((id) => { el[id] = document.getElementById(id); });
-}
-
 function init() {
-  cacheDom();
-  chain.subscribe(() => { ui.renderChrome(); if (el.txs) ui.renderTxs(el.txs); });
+  [
+    'btn-wallet', 'btn-top-back', 'btn-boot', 'btn-goto-legacy', 'btn-goto-about', 'btn-goto-collection',
+    'boot-coll', 'inp-seed', 'btn-reseed', 'btn-mint', 'nft-preview', 'mint-note', 'mint-fee',
+    'chk-timer', 'pace-note', 'mode-note',
+    'id-card', 'gauges', 'history', 'inv-card', 'inv-list', 'txs', 'chain-count',
+    'timer-wrap', 'timer-bar', 'sheet', 'sheet-body',
+    'end-kicker', 'end-title', 'end-text', 'end-total', 'score-board', 'end-history', 'unlocks',
+    'btn-again', 'btn-end-legacy', 'btn-end-collection', 'btn-copy',
+    'board', 'graves', 'btn-wipe', 'coll-grid', 'coll-progress',
+  ].forEach((id) => { el[id] = document.getElementById(id); });
+
+  chain.subscribe(() => { ui.renderChrome(); ui.renderTxs(el.txs, el['chain-count']); });
   ui.renderChrome();
 
   el['inp-seed'].value = randomSeed();
-  updatePaceNote();
+  el['mint-fee'].textContent = `${chain.fee} $TICKET`;
+  updateNotes();
   updatePreview();
+  updateBootCounts();
 
-  /* wallet */
   el['btn-wallet'].addEventListener('click', () => {
     if (!chain.connected) chain.connect();
     else if (chain.state.ticket < chain.fee) chain.claimFaucet();
   });
+  el['btn-top-back'].addEventListener('click', goBack);
 
-  /* navigation */
   el['btn-boot'].addEventListener('click', () => {
     if (!chain.connected) chain.connect();
-    ui.showScreen('screen-mint');
     updatePreview();
+    go('screen-mint');
   });
   el['btn-goto-legacy'].addEventListener('click', openLegacy);
-  el['btn-goto-collection'].addEventListener('click', openCollection);
-  el['btn-goto-about'].addEventListener('click', () => ui.showScreen('screen-about'));
-  el['btn-about-back'].addEventListener('click', () => ui.showScreen('screen-boot'));
-  el['btn-mint-back'].addEventListener('click', () => ui.showScreen('screen-boot'));
-  el['btn-legacy-back'].addEventListener('click', () => ui.showScreen('screen-boot'));
-  el['btn-coll-back'].addEventListener('click', () => ui.showScreen('screen-boot'));
-  el['btn-coll-legacy'].addEventListener('click', openLegacy);
   el['btn-end-legacy'].addEventListener('click', openLegacy);
+  el['btn-goto-collection'].addEventListener('click', openCollection);
   el['btn-end-collection'].addEventListener('click', openCollection);
+  el['btn-goto-about'].addEventListener('click', () => go('screen-about'));
 
-  /* mint config */
   $$('input[name="path"]').forEach((r) => r.addEventListener('change', updatePreview));
-  $$('input[name="pace"]').forEach((r) => r.addEventListener('change', updatePaceNote));
+  $$('input[name="pace"], input[name="mode"]').forEach((r) => r.addEventListener('change', updateNotes));
   el['inp-seed'].addEventListener('input', updatePreview);
   el['btn-reseed'].addEventListener('click', () => { el['inp-seed'].value = randomSeed(); updatePreview(); });
   el['btn-mint'].addEventListener('click', startRun);
 
-  /* run */
-  el.choices.addEventListener('click', onChoiceClick);
-  el['btn-next'].addEventListener('click', onNext);
+  el['sheet-body'].addEventListener('click', onSheetClick);
 
-  /* end */
-  el['btn-again'].addEventListener('click', () => { ui.showScreen('screen-mint'); el['inp-seed'].value = randomSeed(); updatePreview(); });
+  el['btn-again'].addEventListener('click', () => {
+    el['inp-seed'].value = randomSeed();
+    updatePreview();
+    go('screen-mint');
+  });
   el['btn-copy'].addEventListener('click', copyResult);
   el['btn-wipe'].addEventListener('click', () => {
-    if (confirm('למחוק את כל הריצות, ההישגים והיתרות המקומיות?')) { chain.wipe(); openLegacy(); }
+    if (confirm('למחוק את כל הריצות, ההישגים והיתרות המקומיות?')) { chain.wipe(); openLegacy(); updateBootCounts(); }
   });
 
-  el['mint-fee'].textContent = `${chain.fee} $TICKET`;
+  // The sheet floats over the column, so the column needs to know how tall it is.
+  new ResizeObserver(syncSheetHeight).observe(el.sheet);
+}
+
+/* ───────────────────────── navigation ───────────────────────── */
+
+const ROOT_SCREENS = new Set(['screen-boot', 'screen-run']);
+let screen = 'screen-boot';
+
+function go(id) {
+  screen = id;
+  ui.showScreen(id);
+  el['btn-top-back'].hidden = ROOT_SCREENS.has(id);
+}
+
+function goBack() {
+  go(run && !run.ended ? 'screen-run' : 'screen-boot');
+}
+
+function syncSheetHeight() {
+  document.documentElement.style.setProperty('--sheet-h', `${el.sheet.offsetHeight}px`);
+}
+
+function updateBootCounts() {
+  const p = progress();
+  el['boot-coll'].textContent = `${p.have}/${p.total}`;
 }
 
 /* ───────────────────────── mint ───────────────────────── */
@@ -106,16 +130,17 @@ const readConfig = () => ({
   useTimer: el['chk-timer'].checked,
 });
 
-function updatePaceNote() {
-  el['pace-note'].innerHTML = PACE_NOTE[readConfig().pace];
+function updateNotes() {
+  const cfg = readConfig();
+  el['pace-note'].innerHTML = PACE_NOTE[cfg.pace];
+  el['mode-note'].textContent = MODE_NOTE[cfg.mode];
 }
 
 function updatePreview() {
-  const cfg = readConfig();
-  const preview = createRun({ ...cfg, legacy: chain.legacy });
-  ui.paintCard(el['nft-preview'], preview);
+  const preview = createRun({ ...readConfig(), legacy: chain.legacy });
+  ui.renderPreview(el['nft-preview'], preview);
   el['mint-note'].textContent = chain.legacy
-    ? `הדור הקודם (${chain.legacy.id}) מוריש +1 ל${{ resilience: 'חוסן', charisma: 'כריזמה', luck: 'מזל', madness: 'טירוף' }[chain.legacy.passdown]}.`
+    ? `${chain.legacy.id} הוריש +1 ל${TRAIT_HE[chain.legacy.passdown]}.`
     : '';
   el['mint-note'].classList.remove('err');
 }
@@ -124,7 +149,7 @@ function startRun() {
   if (!chain.connected) chain.connect();
   const paid = chain.payEntry();
   if (!paid.ok) {
-    el['mint-note'].textContent = `${paid.reason} — לחץ על יתרת הארנק למעלה כדי לקבל $TICKET מהברז.`;
+    el['mint-note'].textContent = `${paid.reason} — הקש על היתרה למעלה כדי לקבל $TICKET מהברז.`;
     el['mint-note'].classList.add('err');
     return;
   }
@@ -135,8 +160,9 @@ function startRun() {
   chain.mintRoy(run);
 
   currentEvent = null;
-  ui.showScreen('screen-run');
+  pendingDigest = [];
   el['timer-wrap'].classList.toggle('off', !run.useTimer);
+  go('screen-run');
   paintRun();
   beginChapter();
 }
@@ -144,14 +170,11 @@ function startRun() {
 /* ───────────────────────── chapter loop ───────────────────────── */
 
 function paintRun() {
-  ui.paintCard(el['nft-live'], run, { live: true });
-  ui.renderStats(el.stats, run);
-  ui.renderInventory(el['inv-list'], run);
-  ui.renderTxs(el.txs);
-  ui.renderLifeLog(el['life-log'], run);
-  el.age.textContent = run.age;
-  el.chapter.textContent = `פרק ${run.chapter + 1}`;
-  el.mult.textContent = `×${run.multiplier.toFixed(2)}`;
+  ui.renderId(el['id-card'], run, scoreRun(run).total);
+  ui.renderGauges(el.gauges, run);
+  ui.renderHistory(el.history, run);
+  ui.renderInventory(el['inv-card'], el['inv-list'], run);
+  ui.renderTxs(el.txs, el['chain-count']);
 }
 
 /** Resolve `count` chapters with no player input. Returns digest entries. */
@@ -160,8 +183,7 @@ function fastForward(count) {
   for (let i = 0; i < count && !run.ended; i++) {
     const ev = nextEvent(run);
     if (!ev) { checkExhausted(run); break; }
-    const idx = autoPick(run, ev);
-    const report = resolveChoice(run, ev, idx, { auto: true });
+    const report = resolveChoice(run, ev, autoPick(run, ev), { auto: true });
     entries.push({ age: run.age, title: ev.title, text: report.outcome.text });
     advance(run, ev);
   }
@@ -171,46 +193,38 @@ function fastForward(count) {
 
 function beginChapter() {
   busy = false;
-  el['btn-next'].hidden = true;
-  el.hive.hidden = true;
-
-  const skipped = fastForward((run.pace ?? 1) - 1);
-  ui.renderDigest(el.digest, skipped);
+  pendingDigest = fastForward((run.pace ?? 1) - 1);
   paintRun();
 
-  if (run.ended) return showEndingCard();
+  if (run.ended) return showEnding();
 
   currentEvent = nextEvent(run);
-  if (!currentEvent) { checkExhausted(run); return showEndingCard(); }
+  if (!currentEvent) { checkExhausted(run); return showEnding(); }
 
-  const choices = annotate(run, currentEvent);
-  ui.renderEvent({
-    event: el.event, title: el['event-title'], text: el['event-text'],
-    choices: el.choices, outcome: el.outcome, hive: el.hive,
-  }, currentEvent, choices);
-
+  ui.renderDecision(el['sheet-body'], {
+    event: currentEvent,
+    text: eventText(run, currentEvent),
+    echo: eventEcho(run, currentEvent),
+    choices: annotate(run, currentEvent),
+    digest: pendingDigest,
+  });
+  syncSheetHeight();
   startTimer(currentEvent.crisis ? 12000 : 15000);
 }
 
-/** The run ended — pause on a card before the score screen. */
-function showEndingCard() {
+function showEnding() {
   stopTimer();
-  el.choices.innerHTML = '';
-  el['event-title'].textContent = run.ending?.title ?? 'סוף';
-  el['event-text'].textContent = (run.ending?.text ?? '').replace('{age}', run.age);
-  el.event.className = 'event crisis';
-  el.outcome.hidden = true;
-  ui.flash();
-  el['btn-next'].hidden = false;
-  el['btn-next'].textContent = 'סיכום הריצה';
-  el['btn-next'].dataset.mode = 'end';
+  ui.renderEnding(el['sheet-body'], run);
+  syncSheetHeight();
 }
 
 /* ───────────────────────── timer ───────────────────────── */
 
 function startTimer(ms) {
   stopTimer();
-  if (!run.useTimer) { el['timer-bar'].style.transform = 'scaleX(1)'; return; }
+  el['timer-wrap'].classList.toggle('off', !run.useTimer);
+  if (!run.useTimer) return;
+
   const started = performance.now();
   el['timer-bar'].classList.remove('warn');
   const step = (now) => {
@@ -226,28 +240,37 @@ function startTimer(ms) {
 function stopTimer() {
   if (timer) cancelAnimationFrame(timer);
   timer = null;
+  el['timer-bar'].style.transform = 'scaleX(1)';
 }
 
 function onTimeout() {
   if (busy || !currentEvent) return;
   run.indecisions += 1;
   run.res.sanity = Math.max(0, run.res.sanity - 6);
-  commitChoice(autoPick(run, currentEvent), { timedOut: true });
+  commit(autoPick(run, currentEvent), { timedOut: true });
 }
 
 /* ───────────────────────── decisions ───────────────────────── */
 
-function onChoiceClick(e) {
+function onSheetClick(e) {
+  const next = e.target.closest('#btn-next');
+  if (next) return onNext(next.dataset.mode);
+
   const btn = e.target.closest('.choice');
   if (!btn || btn.disabled || busy) return;
-  const index = Number(btn.dataset.index);
-  btn.classList.add('picked');
 
-  if (run.mode === 'hive') runHiveVote(index);
-  else commitChoice(index);
+  const index = Number(btn.dataset.index);
+  $$('.choice', el['sheet-body']).forEach((b) => {
+    b.disabled = true;
+    b.classList.toggle('picked', b === btn);
+    b.classList.toggle('dim', b !== btn);
+  });
+
+  if (run.mode === 'hive') hiveVote(index);
+  else commit(index);
 }
 
-function runHiveVote(playerIndex) {
+function hiveVote(playerIndex) {
   busy = true;
   stopTimer();
   const options = annotate(run, currentEvent).filter((c) => !c.blocked);
@@ -259,56 +282,50 @@ function runHiveVote(playerIndex) {
   for (let i = 0; i < 12; i++) {
     const pick = rng.weighted(options, (c) => bias[c.tag] ?? 1);
     tally[pick.index] += 1;
-    shards.push({ name: `DAVE-${String(i + 1).padStart(2, '0')}`, pick: pick.index });
+    shards.push({ pick: pick.index });
   }
-  const YOUR_WEIGHT = 5;
-  tally[playerIndex] += YOUR_WEIGHT;
-  shards.push({ name: 'YOU ×5', pick: playerIndex, you: true });
+  tally[playerIndex] += 5;
+  shards.push({ pick: playerIndex, you: true });
 
   let winner = playerIndex;
   tally.forEach((v, i) => { if (v > tally[winner]) winner = i; });
   if (annotate(run, currentEvent)[winner].blocked) winner = playerIndex;
 
-  ui.renderHive(el.hive, { shards, tally, choices: currentEvent.choices, winner });
-  $$('.choice', el.choices).forEach((b) => { b.disabled = true; });
-  setTimeout(() => { busy = false; commitChoice(winner, { fromHive: true }); }, 1400);
+  ui.renderHive(el['sheet-body'], { shards, tally, choices: currentEvent.choices, winner });
+  syncSheetHeight();
+  setTimeout(() => { busy = false; commit(winner, { fromHive: true }); }, 1500);
 }
 
-function commitChoice(index, opts = {}) {
+function commit(index, opts = {}) {
   if (busy && !opts.fromHive) return;
   busy = true;
   stopTimer();
 
-  const label = currentEvent.choices[index].label;
-  const receipt = rollReceipt(run, `outcome:${label}`);
-  const report = resolveChoice(run, currentEvent, index, {});
-  chain.commit(run, label, receipt);
+  const choice = currentEvent.choices[index];
+  // Capture the odds before resolving — the roll itself changes the flags they depend on.
+  const odds = annotate(run, currentEvent)[index].odds;
+  const receipt = rollReceipt(run, `outcome:${choice.label}`);
 
-  $$('.choice', el.choices).forEach((b) => {
-    b.disabled = true;
-    b.classList.toggle('picked', Number(b.dataset.index) === index);
-  });
+  const report = resolveChoice(run, currentEvent, index, {});
+  chain.commit(run, choice.label, receipt);
 
   if (opts.timedOut) {
     report.outcome = { ...report.outcome, text: `לא החלטת בזמן. ${report.outcome.text}` };
   }
-  ui.renderOutcome(el.outcome, report);
-  if (report.quality === 'bad') ui.flash();
+
+  const branch = Math.round(odds[choice.outcomes.indexOf(report.outcome)] * 100);
+  ui.renderOutcome(el['sheet-body'], report, {
+    rolled: opts.timedOut ? 'נגמר הזמן — הגורל בחר' : `התגלגל ${branch}%`,
+  });
 
   advance(run, currentEvent);
   paintRun();
-
-  el['btn-next'].hidden = false;
-  el['btn-next'].dataset.mode = run.ended ? 'ending' : 'next';
-  el['btn-next'].textContent = run.ended ? 'המשך' : 'המשך';
-  el['btn-next'].focus({ preventScroll: true });
+  syncSheetHeight();
 }
 
-function onNext() {
-  const mode = el['btn-next'].dataset.mode;
+function onNext(mode) {
   if (mode === 'end') return finishRun();
-  if (run.ended) return showEndingCard();
-  el.digest.hidden = true;
+  if (run.ended) return showEnding();
   beginChapter();
 }
 
@@ -320,46 +337,45 @@ function finishRun() {
   const fresh = evaluate(run, score);
   const g = grade(score.total);
 
-  el['end-kicker'].innerHTML = `<span class="num">RUN FINALIZED · ${ui.esc(sbt.id)}</span> · דירוג <span class="num">${g.tag}</span>`;
+  el['end-kicker'].innerHTML = `<span class="num">${ui.esc(sbt.id)}</span> · דירוג <span class="num">${g.tag}</span>`;
   el['end-title'].textContent = run.ending?.title ?? 'סוף הריצה';
   el['end-title'].className = `end-title ${run.endReason === 'retire' ? 'retire' : 'death'}`;
-
-  const passdownHe = { resilience: 'חוסן', charisma: 'כריזמה', luck: 'מזל', madness: 'טירוף' }[sbt.passdown];
   el['end-text'].innerHTML = `${ui.esc((run.ending?.text ?? '').replace('{age}', run.age))}<br>${ui.esc(g.text)}
-    <br><small style="color:var(--muted)"><span class="num">Soulbound</span> נצרב · הדור הבא יורש <span class="num">+1</span> ל${passdownHe}${payout ? ` · תגמול עונה: <span class="num">${payout} $TICKET</span>` : ''}</small>`;
+    <br><small>הדור הבא יורש <span class="num">+1</span> ל${TRAIT_HE[sbt.passdown]}${
+      payout ? ` · תגמול עונה <span class="num">${payout} $TICKET</span>` : ''}</small>`;
+  el['end-total'].textContent = score.total.toLocaleString('en-US');
 
   ui.renderScore(el['score-board'], score);
+  ui.renderHistory(el['end-history'], run, { full: true });
   ui.renderUnlocks(el.unlocks, fresh);
-  ui.showScreen('screen-end');
-  ui.renderChrome();
+  updateBootCounts();
+  go('screen-end');
 }
 
 function copyResult() {
-  const score = chain.state.leaderboard[0];
   const last = chain.state.graves[0];
   if (!last) return;
   const text = `PROJECT ROY — ${last.id}
-מסלול: ${last.path === 'rick' ? 'Degen' : 'Safe Yield'} · גיל ${last.age} · ${last.endTitle}
+${last.path === 'rick' ? 'Degen' : 'Safe Yield'} · גיל ${last.age} · ${last.endTitle}
 Life Well Lived: ${last.score.toLocaleString('en-US')} (×${last.multiplier.toFixed(2)})
 seed: ${last.seed}`;
   navigator.clipboard?.writeText(text).then(
     () => { el['btn-copy'].textContent = 'הועתק ✓'; setTimeout(() => { el['btn-copy'].textContent = 'העתק תוצאה'; }, 1600); },
     () => { el['btn-copy'].textContent = 'ההעתקה נחסמה'; },
   );
-  void score;
 }
 
-/* ───────────────────────── screens ───────────────────────── */
+/* ───────────────────────── other screens ───────────────────────── */
 
 function openLegacy() {
   ui.renderBoard(el.board);
   ui.renderGraves(el.graves);
-  ui.showScreen('screen-legacy');
+  go('screen-legacy');
 }
 
 function openCollection() {
   ui.renderCollection(el['coll-grid'], el['coll-progress']);
-  ui.showScreen('screen-collection');
+  go('screen-collection');
 }
 
 init();
