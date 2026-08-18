@@ -8,7 +8,7 @@
  */
 
 import { EVENTS, ENDINGS, CRISIS_AGES, MAX_AGE } from './events.js';
-import { applyEffects, giveItem, takeItem, checkNeeds, hasItem, ITEMS } from './state.js';
+import { applyEffects, giveItem, takeItem, checkNeeds } from './state.js';
 import { makeRng, digest } from './rng.js';
 
 /** Fresh RNG stream for one specific roll, derived from seed + chapter + salt. */
@@ -87,10 +87,14 @@ export function eventText(run, event) {
   return event.text;
 }
 
-/** The "this is happening because of what you did" line, when one applies. */
+/**
+ * The "this is happening because of what you did" line, when one applies.
+ * An echo can hang off a flag or off an item still in the inventory.
+ */
 export function eventEcho(run, event) {
   for (const e of [].concat(event.echo ?? [])) {
-    if (run.flags.has(e.flag)) return e.note;
+    if (e.flag && run.flags.has(e.flag)) return e.note;
+    if (e.item && run.items.includes(e.item)) return e.note;
   }
   return null;
 }
@@ -247,6 +251,3 @@ export function checkExhausted(run) {
   if (run.age >= MAX_AGE) return endRun(run, 'oldage');
   endRun(run, 'retire');
 }
-
-export const ITEM_LABEL = (id) => ITEMS[id]?.he ?? id;
-export const hasItemIn = hasItem;

@@ -402,9 +402,9 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'mid_health_scare', stage: [45, 62], years: 3, weight: 4,
-    excludes: ['survivor'],
-    echo: { flag: 'bad_knee', note: 'הברך שמעולם לא חזרה לגמרי' },
+    id: 'mid_health_scare', stage: [45, 62], years: 3, weight: 3,
+    echo: [{ flag: 'bad_knee', note: 'הברך שמעולם לא חזרה לגמרי' },
+           { flag: 'fit', note: 'הכושר שבנית' }],
     title: 'הבדיקה השנתית',
     text: 'הרופא מסתכל על המסך קצת יותר מדי זמן. "יש כמה מספרים שאני לא אוהב."',
     choices: [
@@ -745,7 +745,7 @@ export const EVENTS = [
   /* ══════════════ משברים כפויים ══════════════ */
   {
     id: 'crisis_cancer', crisis: true, stage: [29, 33], years: 3, weight: 0, forced: 'cancer',
-    echo: [{ flag: 'insurance', note: 'הפוליסה שחתמת עליה' }, { flag: 'married', note: 'מי שמחכה לך בבית' }],
+    echo: [{ item: 'insurance', note: 'הפוליסה שחתמת עליה' }, { flag: 'married', note: 'מי שמחכה לך בבית' }],
     title: 'האבחנה',
     textIf: [
       { flag: 'kids', text: 'שלב שני. הרופא מדבר על אחוזים, ואתה לא שומע אף אחד מהם. אתה חושב רק על מי שמחכה לך בבית.' },

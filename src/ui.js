@@ -82,8 +82,8 @@ export function renderGauges(el, run) {
 
   el.innerHTML = `${cells}
     <div class="g g-cash">
-      <span>הון</span>
-      <b class="${run.capital < 0 ? 'neg' : ''}">${money(run.capital)}</b>
+      <span>הון <b class="${run.capital < 0 ? 'neg' : ''}">${money(run.capital)}</b></span>
+      <div class="g-bar g-flat"></div>
     </div>`;
 }
 
@@ -123,7 +123,6 @@ export function renderTxs(el, countEl) {
 
 /* ───────────────────────── the decision sheet ───────────────────────── */
 
-const TAG = { safe: 'בטוח', risk: 'סיכון', degen: 'degen' };
 const EFF = { health: 'בריאות', sanity: 'שפיות', career: 'קריירה' };
 
 /**
@@ -149,15 +148,16 @@ export function outcomeSummary(o) {
 const oddTone = (i, len) => (len === 1 ? 'o-good' : i === 0 ? 'o-good' : i === len - 1 ? 'o-bad' : 'o-mid');
 
 function choiceButton(c) {
+  const certain = c.outcomes.length === 1;
   const odds = c.outcomes.map((o, i) => `
-    <div class="odd ${o.death ? 'o-bad' : oddTone(i, c.outcomes.length)}">
-      <span class="pct">${pct(c.odds[i])}</span>
+    <div class="odd ${certain ? 'o-sure' : o.death ? 'o-bad' : oddTone(i, c.outcomes.length)}">
+      ${certain ? '' : `<span class="pct">${pct(c.odds[i])}</span>`}
       <span class="what">${esc(outcomeSummary(o))}</span>
     </div>`).join('');
 
   return `
-    <button class="choice" data-index="${c.index}" ${c.blocked ? 'disabled' : ''}>
-      <span class="choice-head"><b>${esc(c.label)}</b><span class="tag tag-${c.tag}">${TAG[c.tag]}</span></span>
+    <button class="choice t-${c.tag}" data-index="${c.index}" ${c.blocked ? 'disabled' : ''}>
+      <span class="choice-head"><b>${esc(c.label)}</b></span>
       ${c.blocked ? `<span class="choice-need">${esc(c.blocked)}</span>` : `<span class="odds">${odds}</span>`}
     </button>`;
 }
@@ -180,7 +180,7 @@ function digestBlock(entries) {
     </ul>`;
 }
 
-export function deltaChips(deltas, gained) {
+function deltaChips(deltas, gained) {
   const chips = Object.entries(deltas).map(([k, v]) => {
     if (!v) return '';
     const shown = k === 'capital' ? money(v) : k === 'mult' ? `+${v.toFixed(2)}` : `${v > 0 ? '+' : ''}${v}`;

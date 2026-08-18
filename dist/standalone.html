@@ -18,7 +18,7 @@
 
 /* ============================================================
    PROJECT ROY — Off the Grid
-   One column, cards, and a decision sheet pinned to the thumb.
+   One column, one scroll: a sticky status HUD and cards below it.
    RTL Hebrew. Mobile-first. Zero dependencies.
    ============================================================ */
 
@@ -45,7 +45,6 @@
   --r-sm: 11px;
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --sans: "Heebo", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --sheet-h: 0px;
 }
 
 * { box-sizing: border-box; }
@@ -115,7 +114,7 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
   width: min(560px, 100%); margin-inline: auto;
   padding: 1rem max(.9rem, env(safe-area-inset-right)) 2.5rem max(.9rem, env(safe-area-inset-left));
 }
-.col-run { padding-block-end: calc(var(--sheet-h) + 1.5rem); }
+.col-run { padding-block-end: 2rem; }
 
 .step-title { font-size: 1.35rem; font-weight: 900; margin-block-end: .2rem; }
 .sub-title { font-size: .95rem; color: var(--muted); margin-block-start: .6rem; }
@@ -248,15 +247,12 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
   display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: .5rem; align-items: end;
 }
 .g { display: grid; gap: 3px; min-width: 0; }
-.g > span { font-size: .6rem; color: var(--muted); white-space: nowrap; }
-.g > span b { color: var(--text); font-family: var(--mono); font-size: .68rem; }
+.g > span { font-size: .68rem; color: var(--muted); white-space: nowrap; }
+.g > span b { color: var(--text); font-family: var(--mono); font-size: .76rem; }
 .g.low > span b { color: var(--bad); }
-.g-cash { justify-items: start; }
-.g-cash b {
-  font-family: var(--mono); font-size: .82rem; color: var(--score);
-  direction: ltr; unicode-bidi: isolate;
-}
-.g-cash b.neg { color: var(--bad); }
+.g-cash > span b { font-family: var(--mono); font-size: .76rem; color: var(--score); }
+.g-cash > span b.neg { color: var(--bad); }
+.g-bar.g-flat { background: transparent; }
 .status .marks { grid-area: marks; }
 .id-card { display: grid; grid-template-columns: 1fr auto; gap: .7rem; align-items: center; }
 .id-main { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
@@ -273,16 +269,16 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 .id-meta { display: flex; gap: .55rem; font-size: .78rem; color: var(--muted); flex-wrap: wrap; }
 .id-meta b { color: var(--text); }
 .score-badge {
-  min-width: 74px; flex: none; text-align: center; align-self: start;
-  border-radius: 12px; padding: .4rem .5rem;
+  min-width: 62px; flex: none; text-align: center; align-self: start;
+  border-radius: 10px; padding: .3rem .45rem;
   background: var(--score); color: #211603;
 }
-.score-badge span { display: block; font-family: var(--mono); font-size: .55rem; letter-spacing: .14em; opacity: .75; }
+.score-badge span { display: block; font-family: var(--mono); font-size: .5rem; letter-spacing: .12em; opacity: .7; }
 .score-badge b {
   display: block; font-family: var(--mono); font-weight: 700; line-height: 1.1;
-  font-size: 1.45rem; direction: ltr; unicode-bidi: isolate;
+  font-size: 1.15rem; direction: ltr; unicode-bidi: isolate;
 }
-.score-badge b.long { font-size: 1.3rem; }
+.score-badge b.long { font-size: .95rem; }
 
 /* ─────────────── gauges ─────────────── */
 .gauges { display: grid; gap: .3rem; }
@@ -306,7 +302,7 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 /* ─────────────── history table ─────────────── */
 .table-card { padding: 0; overflow: hidden; }
 .table-card.flush { border: 0; background: none; }
-.history { width: 100%; border-collapse: collapse; font-size: .84rem; }
+.history { width: 100%; border-collapse: collapse; font-size: .88rem; }
 .history th {
   padding: .55rem .8rem; text-align: start; font-weight: 500;
   font-size: .68rem; letter-spacing: .06em; color: var(--dim);
@@ -320,7 +316,7 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
   border-radius: 6px; padding: .1rem 0; display: block; background: var(--card-2); color: var(--muted);
 }
 .h-what b { display: block; font-weight: 500; }
-.h-what span { color: var(--dim); font-size: .76rem; }
+.h-what span { color: var(--dim); font-size: .79rem; }
 .h-delta { font-family: var(--mono); font-size: .78rem; text-align: center; color: var(--muted); }
 .history tr.q-good  { background: rgb(61 220 132 / .05); }
 .history tr.q-good  .h-age { color: var(--good); }
@@ -346,21 +342,11 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 .txs .fn { color: var(--good); }
 .txs .meta { display: block; color: var(--dim); font-size: .56rem; }
 
-/* ─────────────── decision sheet ─────────────── */
-.sheet {
-  position: fixed; inset-inline: 0; bottom: 0; z-index: 20;
-  background: linear-gradient(180deg, rgb(8 9 12 / 0), var(--bg) 14px);
-  padding-block-end: env(safe-area-inset-bottom);
-  pointer-events: none;
-}
-.sheet-inner {
-  width: min(560px, 100%); margin-inline: auto;
-  margin: 0 auto; padding: .9rem max(.9rem, env(safe-area-inset-right)) .9rem max(.9rem, env(safe-area-inset-left));
-  background: var(--card); border: 1px solid var(--line);
-  border-radius: var(--r) var(--r) 0 0;
-  box-shadow: 0 -18px 40px -20px rgb(0 0 0 / .9);
-  max-height: min(56dvh, var(--sheet-max, 56dvh)); overflow-y: auto; pointer-events: auto;
-}
+/* ─────────────── decision card ─────────────── */
+/* Inline in the column, not a fixed overlay: one scroll, nothing squeezed
+   between two pinned regions, and no way to cover the character card. */
+.decision { scroll-margin-top: calc(var(--topbar-h, 46px) + var(--hud-h, 0px) + 10px); }
+
 .timer { height: 3px; border-radius: 99px; background: var(--line-soft); overflow: hidden; margin-block-end: .8rem; }
 .timer i { display: block; height: 100%; width: 100%; background: var(--good); transform-origin: right; }
 .timer i.warn { background: var(--warn); }
@@ -368,37 +354,42 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 
 .echo {
   display: inline-flex; align-items: center; gap: .35rem; margin-block-end: .5rem;
-  font-size: .72rem; color: var(--warn);
+  font-size: .77rem; color: var(--warn);
   background: rgb(245 177 61 / .1); border: 1px solid rgb(245 177 61 / .28);
   border-radius: 99px; padding: .18rem .6rem;
 }
-.sheet-title { font-size: 1.18rem; font-weight: 900; margin-block-end: .3rem; }
+.sheet-title { font-size: 1.25rem; font-weight: 900; margin-block-end: .3rem; }
 .sheet-title.crisis { color: var(--bad); }
-.sheet-text { color: var(--muted); font-size: .9rem; margin-block-end: .8rem; }
+.sheet-text { color: var(--muted); font-size: .95rem; margin-block-end: .8rem; }
 
 .digest { display: grid; gap: .4rem; margin-block-end: .8rem; }
 .digest li {
-  font-size: .8rem; color: var(--muted);
+  font-size: .85rem; color: var(--muted);
   padding: .5rem .65rem; border-radius: var(--r-sm);
   background: var(--bg); border-inline-start: 2px solid var(--line);
 }
 .digest li b { color: var(--text); font-family: var(--mono); font-size: .72rem; }
-.digest-head { font-family: var(--mono); font-size: .6rem; letter-spacing: .14em; color: var(--dim); }
+.digest-head { font-family: var(--mono); font-size: .65rem; letter-spacing: .14em; color: var(--dim); }
 
 /* choices with the odds on the face of the button */
 .choices { display: grid; gap: .5rem; }
 .choice {
   display: grid; gap: .45rem; width: 100%; text-align: start; cursor: pointer;
-  padding: .75rem .8rem; border-radius: var(--r-sm);
+  padding: .75rem .8rem .75rem .8rem; border-radius: var(--r-sm);
   background: var(--card-2); border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--line);
   transition: transform .1s, border-color .15s;
 }
+/* The risk level rides on the edge of the button instead of a redundant chip. */
+.choice.t-safe  { border-inline-start-color: var(--cool); }
+.choice.t-risk  { border-inline-start-color: var(--warn); }
+.choice.t-degen { border-inline-start-color: var(--hot); }
 .choice:active { transform: scale(.99); }
 .choice:disabled { opacity: .42; cursor: not-allowed; }
 .choice.dim { opacity: .35; }
 .choice.picked { border-color: var(--text); }
 .choice-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
-.choice-head b { font-size: .95rem; font-weight: 700; }
+.choice-head b { font-size: 1rem; font-weight: 700; }
 .tag {
   flex: none; font-size: .58rem; letter-spacing: .08em; text-transform: uppercase;
   padding: .12rem .45rem; border-radius: 4px; border: 1px solid currentcolor;
@@ -407,16 +398,17 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 
 .odds { display: grid; gap: .3rem; }
 .odd {
-  display: grid; grid-template-columns: 2.9rem 1fr; gap: .5rem; align-items: center;
-  font-size: .76rem; padding: .3rem .45rem; border-radius: 7px; background: rgb(255 255 255 / .03);
+  display: grid; grid-template-columns: 3rem 1fr; gap: .55rem; align-items: center;
+  font-size: .81rem; padding: .3rem .45rem; border-radius: 7px; background: rgb(255 255 255 / .03);
 }
 .odd .pct {
-  font-family: var(--mono); font-size: .74rem; font-weight: 700; text-align: center;
+  font-family: var(--mono); font-size: .78rem; font-weight: 700; text-align: center;
   border-radius: 5px; padding: .1rem 0;
 }
 .odd.o-good { color: var(--good); } .odd.o-good .pct { background: rgb(61 220 132 / .14); }
 .odd.o-bad  { color: var(--bad); }  .odd.o-bad  .pct { background: rgb(255 95 95 / .14); }
 .odd.o-mid  { color: var(--warn); } .odd.o-mid  .pct { background: rgb(245 177 61 / .14); }
+.odd.o-sure { grid-template-columns: 1fr; color: var(--muted); }
 .odd .what { color: inherit; opacity: .92; }
 .choice-need { font-size: .72rem; color: var(--bad); }
 
@@ -511,7 +503,6 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 
 @media (min-width: 640px) {
   .col { padding-block: 1.4rem 3rem; }
-  .sheet-inner { border-radius: var(--r); margin-block-end: .9rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
@@ -543,7 +534,7 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 .mark { white-space: nowrap; flex: none; }
 .marks:empty { display: none; }
 .mark {
-  font-size: .68rem; padding: .1rem .45rem; border-radius: 99px;
+  font-size: .73rem; padding: .1rem .45rem; border-radius: 99px;
   background: var(--card-2); color: var(--muted); border: 1px solid var(--line-soft);
 }
 .mark.fresh { color: var(--score); border-color: rgb(245 177 61 / .45); }
@@ -552,9 +543,15 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 .preview-card > div:last-child { flex: 1; min-width: 0; }
 .grave { display: grid; gap: .15rem; justify-items: center; text-align: center; }
 .grave-av { width: 46px; background: none; padding: 0 0 .3rem; }
+.grave .grave-score, .grave .sbt { white-space: nowrap; }
+.grave .grave-score { font-size: .74rem; color: var(--muted); }
 .status .id-name { display: flex; align-items: center; gap: .4rem; }
 .status .id-name .pill { font-size: .55rem; padding: .1rem .4rem; }
-.status .id-meta { gap: .45rem; font-size: .74rem; }
+.status .id-meta { gap: .5rem; font-size: .78rem; }
+
+/* The decision reads as the main card on the page. */
+.decision { padding: 1rem; }
+.decision .timer { margin-block-end: .85rem; }
 </style>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%95%B9%EF%B8%8F%3C/text%3E%3C/svg%3E">
 </head>
@@ -666,6 +663,11 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
         <div class="marks" id="marks"></div>
       </div>
 
+      <div class="card decision" id="sheet">
+        <div class="timer" id="timer-wrap"><i id="timer-bar"></i></div>
+        <div class="sheet-body" id="sheet-body"></div>
+      </div>
+
       <div class="card table-card">
         <table class="history">
           <thead>
@@ -687,12 +689,6 @@ code { font-family: var(--mono); font-size: .86em; color: var(--cool); }
 
     </div>
 
-    <div class="sheet" id="sheet">
-      <div class="sheet-inner">
-        <div class="timer" id="timer-wrap"><i id="timer-bar"></i></div>
-        <div class="sheet-body" id="sheet-body"></div>
-      </div>
-    </div>
   </section>
 
   <!-- ═══════════ END ═══════════ -->
@@ -969,9 +965,6 @@ var MockChainAdapter = class {
   }
   autoCommit(run2, count) {
     return this.tx("RoyRun.fastForward", { chapters: count, age: run2.age });
-  }
-  burn(run2, item) {
-    return this.tx("RoyID.burnItem", { item, tokenId: `#${run2.tokenId}` });
   }
   /**
    * Finalize: burn the Roy ID, mint the soulbound record, pay out of the pool,
@@ -1649,9 +1642,11 @@ var EVENTS = [
     id: "mid_health_scare",
     stage: [45, 62],
     years: 3,
-    weight: 4,
-    excludes: ["survivor"],
-    echo: { flag: "bad_knee", note: "\u05D4\u05D1\u05E8\u05DA \u05E9\u05DE\u05E2\u05D5\u05DC\u05DD \u05DC\u05D0 \u05D7\u05D6\u05E8\u05D4 \u05DC\u05D2\u05DE\u05E8\u05D9" },
+    weight: 3,
+    echo: [
+      { flag: "bad_knee", note: "\u05D4\u05D1\u05E8\u05DA \u05E9\u05DE\u05E2\u05D5\u05DC\u05DD \u05DC\u05D0 \u05D7\u05D6\u05E8\u05D4 \u05DC\u05D2\u05DE\u05E8\u05D9" },
+      { flag: "fit", note: "\u05D4\u05DB\u05D5\u05E9\u05E8 \u05E9\u05D1\u05E0\u05D9\u05EA" }
+    ],
     title: "\u05D4\u05D1\u05D3\u05D9\u05E7\u05D4 \u05D4\u05E9\u05E0\u05EA\u05D9\u05EA",
     text: '\u05D4\u05E8\u05D5\u05E4\u05D0 \u05DE\u05E1\u05EA\u05DB\u05DC \u05E2\u05DC \u05D4\u05DE\u05E1\u05DA \u05E7\u05E6\u05EA \u05D9\u05D5\u05EA\u05E8 \u05DE\u05D3\u05D9 \u05D6\u05DE\u05DF. "\u05D9\u05E9 \u05DB\u05DE\u05D4 \u05DE\u05E1\u05E4\u05E8\u05D9\u05DD \u05E9\u05D0\u05E0\u05D9 \u05DC\u05D0 \u05D0\u05D5\u05D4\u05D1."',
     choices: [
@@ -2067,7 +2062,7 @@ var EVENTS = [
     years: 3,
     weight: 0,
     forced: "cancer",
-    echo: [{ flag: "insurance", note: "\u05D4\u05E4\u05D5\u05DC\u05D9\u05E1\u05D4 \u05E9\u05D7\u05EA\u05DE\u05EA \u05E2\u05DC\u05D9\u05D4" }, { flag: "married", note: "\u05DE\u05D9 \u05E9\u05DE\u05D7\u05DB\u05D4 \u05DC\u05DA \u05D1\u05D1\u05D9\u05EA" }],
+    echo: [{ item: "insurance", note: "\u05D4\u05E4\u05D5\u05DC\u05D9\u05E1\u05D4 \u05E9\u05D7\u05EA\u05DE\u05EA \u05E2\u05DC\u05D9\u05D4" }, { flag: "married", note: "\u05DE\u05D9 \u05E9\u05DE\u05D7\u05DB\u05D4 \u05DC\u05DA \u05D1\u05D1\u05D9\u05EA" }],
     title: "\u05D4\u05D0\u05D1\u05D7\u05E0\u05D4",
     textIf: [
       { flag: "kids", text: "\u05E9\u05DC\u05D1 \u05E9\u05E0\u05D9. \u05D4\u05E8\u05D5\u05E4\u05D0 \u05DE\u05D3\u05D1\u05E8 \u05E2\u05DC \u05D0\u05D7\u05D5\u05D6\u05D9\u05DD, \u05D5\u05D0\u05EA\u05D4 \u05DC\u05D0 \u05E9\u05D5\u05DE\u05E2 \u05D0\u05E3 \u05D0\u05D7\u05D3 \u05DE\u05D4\u05DD. \u05D0\u05EA\u05D4 \u05D7\u05D5\u05E9\u05D1 \u05E8\u05E7 \u05E2\u05DC \u05DE\u05D9 \u05E9\u05DE\u05D7\u05DB\u05D4 \u05DC\u05DA \u05D1\u05D1\u05D9\u05EA." },
@@ -2225,7 +2220,8 @@ function eventText(run2, event) {
 }
 function eventEcho(run2, event) {
   for (const e of [].concat(event.echo ?? [])) {
-    if (run2.flags.has(e.flag)) return e.note;
+    if (e.flag && run2.flags.has(e.flag)) return e.note;
+    if (e.item && run2.items.includes(e.item)) return e.note;
   }
   return null;
 }
@@ -2585,7 +2581,6 @@ var ui_exports = {};
 __export(ui_exports, {
   $: () => $,
   $$: () => $$,
-  deltaChips: () => deltaChips,
   esc: () => esc,
   money: () => money,
   outcomeSummary: () => outcomeSummary,
@@ -2919,8 +2914,8 @@ function renderGauges(el2, run2) {
     </div>`).join("");
   el2.innerHTML = `${cells}
     <div class="g g-cash">
-      <span>\u05D4\u05D5\u05DF</span>
-      <b class="${run2.capital < 0 ? "neg" : ""}">${money(run2.capital)}</b>
+      <span>\u05D4\u05D5\u05DF <b class="${run2.capital < 0 ? "neg" : ""}">${money(run2.capital)}</b></span>
+      <div class="g-bar g-flat"></div>
     </div>`;
 }
 function renderHistory(el2, run2, { full = false } = {}) {
@@ -2951,7 +2946,6 @@ function renderTxs(el2, countEl) {
       <span class="meta">block ${tx.block.toLocaleString("en-US")} \xB7 ${tx.gas.toFixed(7)} ETH</span></li>`;
   }).join("");
 }
-var TAG = { safe: "\u05D1\u05D8\u05D5\u05D7", risk: "\u05E1\u05D9\u05DB\u05D5\u05DF", degen: "degen" };
 var EFF = { health: "\u05D1\u05E8\u05D9\u05D0\u05D5\u05EA", sanity: "\u05E9\u05E4\u05D9\u05D5\u05EA", career: "\u05E7\u05E8\u05D9\u05D9\u05E8\u05D4" };
 function outcomeSummary(o) {
   if (o.death) return "\u2620 \u05E1\u05D5\u05E3 \u05D4\u05E8\u05D9\u05E6\u05D4";
@@ -2965,14 +2959,15 @@ function outcomeSummary(o) {
 }
 var oddTone = (i, len) => len === 1 ? "o-good" : i === 0 ? "o-good" : i === len - 1 ? "o-bad" : "o-mid";
 function choiceButton(c) {
+  const certain = c.outcomes.length === 1;
   const odds = c.outcomes.map((o, i) => `
-    <div class="odd ${o.death ? "o-bad" : oddTone(i, c.outcomes.length)}">
-      <span class="pct">${pct(c.odds[i])}</span>
+    <div class="odd ${certain ? "o-sure" : o.death ? "o-bad" : oddTone(i, c.outcomes.length)}">
+      ${certain ? "" : `<span class="pct">${pct(c.odds[i])}</span>`}
       <span class="what">${esc(outcomeSummary(o))}</span>
     </div>`).join("");
   return `
-    <button class="choice" data-index="${c.index}" ${c.blocked ? "disabled" : ""}>
-      <span class="choice-head"><b>${esc(c.label)}</b><span class="tag tag-${c.tag}">${TAG[c.tag]}</span></span>
+    <button class="choice t-${c.tag}" data-index="${c.index}" ${c.blocked ? "disabled" : ""}>
+      <span class="choice-head"><b>${esc(c.label)}</b></span>
       ${c.blocked ? `<span class="choice-need">${esc(c.blocked)}</span>` : `<span class="odds">${odds}</span>`}
     </button>`;
 }
@@ -3234,30 +3229,32 @@ function init() {
       updateBootCounts();
     }
   });
-  new ResizeObserver(syncSheetHeight).observe(el.sheet);
-  new ResizeObserver(syncSheetHeight).observe(el["id-card"]);
-  window.addEventListener("resize", syncSheetHeight);
+  new ResizeObserver(syncHudHeight).observe(el["id-card"]);
   const topbar = document.querySelector(".topbar");
   new ResizeObserver(() => {
     document.documentElement.style.setProperty("--topbar-h", `${topbar.offsetHeight}px`);
   }).observe(topbar);
 }
-var ROOT_SCREENS = /* @__PURE__ */ new Set(["screen-boot", "screen-run"]);
-var screen = "screen-boot";
+var ROOT_SCREENS = /* @__PURE__ */ new Set(["screen-boot"]);
+var current = "screen-boot";
+var previous = "screen-boot";
 function go(id) {
-  screen = id;
+  if (id !== current) previous = current;
+  current = id;
   showScreen(id);
   el["btn-top-back"].hidden = ROOT_SCREENS.has(id);
 }
+var OVERLAYS = /* @__PURE__ */ new Set(["screen-collection", "screen-legacy", "screen-about"]);
 function goBack() {
-  go(run && !run.ended ? "screen-run" : "screen-boot");
+  if (current === "screen-run" && run && !run.ended) {
+    if (!confirm("\u05DC\u05E0\u05D8\u05D5\u05E9 \u05D0\u05EA \u05D4\u05E8\u05D9\u05E6\u05D4? \u05D4\u05D4\u05EA\u05E7\u05D3\u05DE\u05D5\u05EA \u05EA\u05D0\u05D1\u05D3 \u05D5\u05D3\u05DE\u05D9 \u05D4\u05DB\u05E0\u05D9\u05E1\u05D4 \u05DC\u05D0 \u05D9\u05D5\u05D7\u05D6\u05E8\u05D5.")) return;
+    stopTimer();
+    run = null;
+  }
+  go(OVERLAYS.has(current) ? previous : "screen-boot");
 }
-function syncSheetHeight() {
-  const root = document.documentElement.style;
-  root.setProperty("--sheet-h", `${el.sheet.offsetHeight}px`);
-  const hudBottom = el["id-card"].getBoundingClientRect().bottom;
-  const room = Math.max(200, window.innerHeight - hudBottom - 14);
-  root.setProperty("--sheet-max", `${Math.round(room)}px`);
+function syncHudHeight() {
+  document.documentElement.style.setProperty("--hud-h", `${el["id-card"].offsetHeight}px`);
 }
 function updateBootCounts() {
   const p = progress();
@@ -3352,13 +3349,15 @@ function beginChapter() {
     choices: annotate(run, currentEvent),
     digest: pendingDigest
   });
-  syncSheetHeight();
+  syncHudHeight();
+  window.scrollTo({ top: 0, behavior: "instant" });
   startTimer(currentEvent.crisis ? 12e3 : 15e3);
 }
 function showEnding() {
   stopTimer();
   renderEnding(el["sheet-body"], run);
-  syncSheetHeight();
+  syncHudHeight();
+  el.sheet.scrollIntoView({ block: "start", behavior: "smooth" });
 }
 function startTimer(ms) {
   stopTimer();
@@ -3425,7 +3424,6 @@ function hiveVote(playerIndex) {
   });
   if (annotate(run, currentEvent)[winner].blocked) winner = playerIndex;
   renderHive(el["sheet-body"], { shards, tally, choices: currentEvent.choices, winner });
-  syncSheetHeight();
   setTimeout(() => {
     busy = false;
     commit(winner, { fromHive: true });
@@ -3449,7 +3447,8 @@ function commit(index, opts = {}) {
   });
   advance(run, currentEvent);
   paintRun();
-  syncSheetHeight();
+  syncHudHeight();
+  el.sheet.scrollIntoView({ block: "start", behavior: "smooth" });
 }
 function onNext(mode) {
   if (mode === "end") return finishRun();

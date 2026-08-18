@@ -94,11 +94,8 @@ function init() {
     if (confirm('למחוק את כל הריצות, ההישגים והיתרות המקומיות?')) { chain.wipe(); openLegacy(); updateBootCounts(); }
   });
 
-  // The sheet floats over the column and the status card sticks under the top
-  // bar, so the layout needs both of their real heights.
-  new ResizeObserver(syncSheetHeight).observe(el.sheet);
-  new ResizeObserver(syncSheetHeight).observe(el['id-card']);
-  window.addEventListener('resize', syncSheetHeight);
+  // The status card sticks under the top bar, so the layout needs both heights.
+  new ResizeObserver(syncHudHeight).observe(el['id-card']);
   const topbar = document.querySelector('.topbar');
   new ResizeObserver(() => {
     document.documentElement.style.setProperty('--topbar-h', `${topbar.offsetHeight}px`);
@@ -107,28 +104,35 @@ function init() {
 
 /* ───────────────────────── navigation ───────────────────────── */
 
-const ROOT_SCREENS = new Set(['screen-boot', 'screen-run']);
-let screen = 'screen-boot';
+const ROOT_SCREENS = new Set(['screen-boot']);
+
+// Back returns where you came from — leaving the collection after a run should
+// land on that run's summary, not throw you out to the title screen.
+let current = 'screen-boot';
+let previous = 'screen-boot';
 
 function go(id) {
-  screen = id;
+  if (id !== current) previous = current;
+  current = id;
   ui.showScreen(id);
   el['btn-top-back'].hidden = ROOT_SCREENS.has(id);
 }
 
+const OVERLAYS = new Set(['screen-collection', 'screen-legacy', 'screen-about']);
+
 function goBack() {
-  go(run && !run.ended ? 'screen-run' : 'screen-boot');
+  // Leaving a live run throws it away, so make that the one place we ask first.
+  if (current === 'screen-run' && run && !run.ended) {
+    if (!confirm('לנטוש את הריצה? ההתקדמות תאבד ודמי הכניסה לא יוחזרו.')) return;
+    stopTimer();
+    run = null;
+  }
+  go(OVERLAYS.has(current) ? previous : 'screen-boot');
 }
 
-function syncSheetHeight() {
-  const root = document.documentElement.style;
-  root.setProperty('--sheet-h', `${el.sheet.offsetHeight}px`);
-
-  // Cap the sheet at whatever is left under the sticky status card, so the
-  // decision can never grow over the character it is about.
-  const hudBottom = el['id-card'].getBoundingClientRect().bottom;
-  const room = Math.max(200, window.innerHeight - hudBottom - 14);
-  root.setProperty('--sheet-max', `${Math.round(room)}px`);
+/** The HUD is sticky, so anything scrolled to must clear its height. */
+function syncHudHeight() {
+  document.documentElement.style.setProperty('--hud-h', `${el['id-card'].offsetHeight}px`);
 }
 
 function updateBootCounts() {
@@ -241,14 +245,16 @@ function beginChapter() {
     choices: annotate(run, currentEvent),
     digest: pendingDigest,
   });
-  syncSheetHeight();
+  syncHudHeight();
+  window.scrollTo({ top: 0, behavior: 'instant' });
   startTimer(currentEvent.crisis ? 12000 : 15000);
 }
 
 function showEnding() {
   stopTimer();
   ui.renderEnding(el['sheet-body'], run);
-  syncSheetHeight();
+  syncHudHeight();
+  el.sheet.scrollIntoView({ block: 'start', behavior: 'smooth' });
 }
 
 /* ───────────────────────── timer ───────────────────────── */
@@ -325,7 +331,6 @@ function hiveVote(playerIndex) {
   if (annotate(run, currentEvent)[winner].blocked) winner = playerIndex;
 
   ui.renderHive(el['sheet-body'], { shards, tally, choices: currentEvent.choices, winner });
-  syncSheetHeight();
   setTimeout(() => { busy = false; commit(winner, { fromHive: true }); }, 1500);
 }
 
@@ -353,7 +358,8 @@ function commit(index, opts = {}) {
 
   advance(run, currentEvent);
   paintRun();
-  syncSheetHeight();
+  syncHudHeight();
+  el.sheet.scrollIntoView({ block: 'start', behavior: 'smooth' });
 }
 
 function onNext(mode) {

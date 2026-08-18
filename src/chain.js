@@ -113,10 +113,6 @@ class MockChainAdapter {
     return this.tx('RoyRun.fastForward', { chapters: count, age: run.age });
   }
 
-  burn(run, item) {
-    return this.tx('RoyID.burnItem', { item, tokenId: `#${run.tokenId}` });
-  }
-
   /**
    * Finalize: burn the Roy ID, mint the soulbound record, pay out of the pool,
    * and pick the trait that passes down to the next generation.
