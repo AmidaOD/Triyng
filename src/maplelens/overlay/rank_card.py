@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 
 from PIL import Image
 
+from maplelens.guide.training import Spot, SpotsError, load_spots, recommend
 from maplelens.market.format import format_ago
 from maplelens.overlay import gamewin
 from maplelens.overlay.canvas import Canvas
@@ -15,6 +16,7 @@ _MAX_HEIGHT = 300
 _HERO_H = 30
 _CREDIT = "data: classicrank.com"
 _NOTE_H = 14   # room under the last row for the 'updated' line
+_SPOT_H = 32   # map name over its level band and monsters
 _MESSAGES = {
     Status.LOADING: ("Looking up rank…", "one moment"),
     Status.MISSING: ("Not ranked yet", "No record on classicrank.com"),
@@ -26,14 +28,20 @@ def _number(value: int | None, prefix: str = "") -> str:
     return f"{prefix}{value:,}" if value is not None else "—"
 
 
-def render_rank_card(result: RankResult, now: datetime | None = None, *, ui_scale: float = 1.0) -> Image.Image:
-    """Panel for a player in whatever state their lookup is in (the game window already shows the name)."""
+def render_rank_card(result: RankResult, now: datetime | None = None, *, ui_scale: float = 1.0,
+                     spots: tuple[Spot, ...] | None = None) -> Image.Image:
+    """Panel for a player in whatever state their lookup is in (the game window already shows the name).
+
+    `spots` defaults to the bundled training table; pass `()` to leave the training section out.
+    """
     cv = Canvas(CARD_WIDTH, _MAX_HEIGHT)
     y = gamewin.PANEL_TOP + gamewin.PAD_V
     if result.rank is None:
         y, note = _message(cv, y, *_MESSAGES[result.status]), None
     else:
         y, note = _ranks(cv, y, result.rank, now or datetime.now(UTC))
+        if result.rank.level is not None:
+            y = _training(cv, y, result.rank.level, _default_spots() if spots is None else spots)
     if note:
         gamewin.centred(cv, CARD_WIDTH / 2, y + 5, note, 10, gamewin.INK_DIM)
     panel_bottom = y + (_NOTE_H if note else gamewin.PAD_V - gamewin.ROW_GAP)
@@ -56,6 +64,28 @@ def _ranks(cv: Canvas, y: int, rank: Rank, now: datetime) -> tuple[int, str]:
     y = gamewin.row(cv, y, "JOB RANK", _number(rank.job_rank, "#"))
     y = gamewin.row(cv, y, "FAME RANK", _number(rank.fame_rank, "#"))
     return y, note
+
+
+def _default_spots() -> tuple[Spot, ...]:
+    try:
+        return load_spots()
+    except SpotsError:   # a broken table costs the section, never the panel
+        return ()
+
+
+def _training(cv: Canvas, y: int, level: int, spots: tuple[Spot, ...]) -> int:
+    picks = recommend(spots, level)
+    if not picks:
+        return y
+    gamewin.pill(cv, (gamewin.PAD, y, CARD_WIDTH - 2 * gamewin.PAD, 18), f"TRAIN HERE · LV {level}", 10)
+    y += 18 + gamewin.ROW_GAP
+    for spot in picks:
+        gamewin.value_box(cv, (gamewin.PAD, y, CARD_WIDTH - 2 * gamewin.PAD, _SPOT_H))
+        cv.text(gamewin.PAD + 7, y + 13, spot.map, 12, gamewin.INK, anchor="ls")
+        detail = " · ".join([f"Lv {spot.min_level}-{spot.max_level}", *spot.monsters[:2]])
+        cv.text(gamewin.PAD + 7, y + 26, detail, 10, gamewin.INK_DIM, anchor="ls")
+        y += _SPOT_H + gamewin.ROW_GAP
+    return y
 
 
 def _message(cv: Canvas, y: int, headline: str, detail: str) -> int:

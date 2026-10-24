@@ -7,7 +7,9 @@ hiddenimports = collect_submodules("winrt")
 a = Analysis(
     ["src/maplelens/__main__.py"],
     pathex=["src"],
-    datas=[("src/maplelens/assets", "maplelens/assets")],  # images read via __file__-relative paths
+    # images and the training table are read via __file__-relative paths
+    datas=[("src/maplelens/assets", "maplelens/assets"),
+           ("src/maplelens/guide/training_spots.json", "maplelens/guide")],
     hiddenimports=hiddenimports,
     excludes=["tkinter", "pytest"],
 )

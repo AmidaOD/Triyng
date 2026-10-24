@@ -23,6 +23,7 @@ Hover an item, see what it is worth. No injection, no memory reading, no game fi
 |---|---|
 | 🪙 **Live price card** | Hover any inventory item and a card appears beside its tooltip with the [MesoWatch](https://meso.watch) price. |
 | 🏆 **Player rank panel** | Open a player's **Character Info** window and a panel in the game's own style (pink labels, beige boxes) appears on its left with their world, job and fame rank from the public [classicrank.com API](https://classicrank.com/developer) (no key; cached, rate‑limit friendly). Falls back to the right side, or hides, if there is no room inside the game. |
+| 🗺️ **Where to train** | The rank panel also lists up to two recommended training maps for that character's level (from classicrank.com), read from a hand-kept table in `src/maplelens/guide/training_spots.json`. The level bands come from community guides that disagree with each other, so every entry is marked unverified until checked in game. |
 | 🧭 **Smart placement** | Right of the tooltip; left near the screen edge; below for equipment compare (two tooltips). |
 | 🎨 **Truly translucent** | Per‑pixel alpha like the game's own box (see‑through fill, solid text), Tahoma font, same borders and bullet. |
 | 👀 **Glance first, details on dwell** | Hover and you get the answer at once: price, trend, week sparkline, where the price sits in its range, how it sells. Keep the pointer on the item for ~1 s and the card grows into the full view. |

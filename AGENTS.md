@@ -40,6 +40,7 @@ capture/   game_window.py  find MapleStory window, client rect (DPI aware), curs
 vision/    tooltip.py      tooltip_present(image) -> bool   (pure)
            locate.py       candidate_tops(strip): find a tooltip pushed up by the game's bottom clamp (pure)
            ocr.py          TitleReader: Windows OCR of a tooltip title row (cached)
+guide/     training.py     Spot table (training_spots.json) and recommend(level) (pure)
 market/    models.py       Item and nested data (Day, NpcShop, Craft, CashInfo); Item.from_raw
            snapshot.py     load list.json -> Snapshot(items, generated_at)
            catalog.py      Catalog.lookup(ocr_text) fuzzy name match

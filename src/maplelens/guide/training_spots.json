@@ -1,0 +1,22 @@
+{
+  "note": "Community picks for MapleStory Classic World, gathered from web guides in October 2026. The guides disagree on exact level bands, so every entry is unverified until someone checks it in game.",
+  "sources": [
+    "https://maplestory.quest/guides/training",
+    "https://www.mmopixel.com/news/maplestory-classic-world-leveling-guide-1-to-100-best-training-spots-by-level",
+    "https://www.u4n.com/news/best-maplestory-classic-world-training-spots-levels-1-70.html"
+  ],
+  "spots": [
+    {"map": "L Forest I", "region": "Victoria Island", "levels": [1, 10], "monsters": ["Ribbon Pig"], "verified": false},
+    {"map": "Henesys Hunting Ground I", "region": "Henesys", "levels": [1, 15], "monsters": [], "verified": false},
+    {"map": "Line 1 Area 1", "region": "Kerning City Subway", "levels": [11, 21], "monsters": ["Bubbling"], "verified": false},
+    {"map": "Ant Tunnel III", "region": "Sleepywood", "levels": [21, 25], "monsters": ["Zombie Mushroom"], "verified": false},
+    {"map": "Ant Tunnel Park", "region": "Sleepywood", "levels": [21, 30], "monsters": ["Evil Eye"], "verified": false},
+    {"map": "Burnt Land", "region": "Perion", "levels": [30, 39], "monsters": [], "verified": false},
+    {"map": "Lorang Lorang", "region": "Florina Road", "levels": [36, 42], "monsters": ["Lorang"], "verified": false},
+    {"map": "Line 2 Area 2", "region": "Kerning City Subway", "levels": [46, 55], "monsters": [], "verified": false},
+    {"map": "Lorang and Clang", "region": "Florina Road", "levels": [47, 55], "monsters": ["Lorang", "Clang"], "verified": false},
+    {"map": "Sleepy Dungeon V", "region": "Sleepywood", "levels": [55, 70], "monsters": [], "verified": false},
+    {"map": "Dangerous Valley II", "region": "Sleepywood", "levels": [60, 70], "monsters": ["Red Drake"], "verified": false},
+    {"map": "Remains <Cliff>", "region": "not stated", "levels": [71, 80], "monsters": [], "verified": false}
+  ]
+}
